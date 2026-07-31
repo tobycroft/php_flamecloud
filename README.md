@@ -1,12 +1,6 @@
 # php_flamecloud
 
-## 安装
-
-~~~
-composer install
-~~~
-
-启动服务
+## 启动服务
 
 ~~~
 php think run
