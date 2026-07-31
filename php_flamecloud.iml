@@ -21,8 +21,10 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-filesystem" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-helper" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-orm" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-template" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-trace" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-validate" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/topthink/think-view" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

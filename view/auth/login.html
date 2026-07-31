@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云后台 - 登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+        .shake { animation: shake .4s ease-in-out; }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md">
+        <!-- 标题 -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 text-white text-2xl font-bold shadow-lg shadow-orange-500/30 mb-4">焰</div>
+            <h1 class="text-2xl font-bold text-gray-900">火焰云管理后台</h1>
+            <p class="text-gray-500 text-sm mt-2">请使用管理员账号登录</p>
+        </div>
+
+        <!-- 登录卡片 -->
+        <div id="loginCard" class="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 p-8">
+            <!-- 错误提示 -->
+            <div id="errorMsg" class="hidden mb-5 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span id="errorText"></span>
+            </div>
+
+            <form id="loginForm" class="space-y-5" autocomplete="off">
+                <!-- 用户名 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">用户名</label>
+                    <input id="username" name="username" type="text" required
+                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-gray-900"
+                        placeholder="请输入用户名" />
+                </div>
+
+                <!-- 密码 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">密码</label>
+                    <div class="relative">
+                        <input id="password" name="password" type="password" required
+                            class="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-gray-900"
+                            placeholder="请输入密码" />
+                        <button type="button" id="togglePwd" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg id="eyeOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <svg id="eyeClose" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 验证码 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">验证码</label>
+                    <div class="flex gap-3">
+                        <input id="code" name="code" type="text" required maxlength="4"
+                            class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all text-gray-900 uppercase"
+                            placeholder="输入验证码" />
+                        <img id="captchaImg" alt="点击刷新"
+                            class="h-[50px] w-[120px] rounded-xl border border-gray-200 cursor-pointer hover:border-orange-400 transition-colors object-cover" />
+                    </div>
+                </div>
+
+                <!-- 提交 -->
+                <button type="submit" id="submitBtn"
+                    class="w-full py-3.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed">
+                    <span id="btnText">立即登录</span>
+                </button>
+            </form>
+        </div>
+
+        <p class="mt-6 text-center text-xs text-gray-400">© 火焰云 · 管理后台 · 仅供内部使用</p>
+    </div>
+
+<script>
+(function () {
+    var form    = document.getElementById('loginForm');
+    var card    = document.getElementById('loginCard');
+    var errBox  = document.getElementById('errorMsg');
+    var errText = document.getElementById('errorText');
+    var btn     = document.getElementById('submitBtn');
+    var btnText = document.getElementById('btnText');
+    var capImg  = document.getElementById('captchaImg');
+
+    // 验证码
+    function refreshCaptcha() {
+        capImg.src = "{:url('auth/captcha')}" + '?t=' + Date.now();
+    }
+    capImg.addEventListener('click', refreshCaptcha);
+    refreshCaptcha();
+
+    // 显示错误
+    function showError(msg) {
+        errText.textContent = msg;
+        errBox.classList.remove('hidden');
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+        refreshCaptcha();
+    }
+
+    // 密码可见切换
+    document.getElementById('togglePwd').addEventListener('click', function () {
+        var pwd = document.getElementById('password');
+        var open = document.getElementById('eyeOpen');
+        var close = document.getElementById('eyeClose');
+        if (pwd.type === 'password') {
+            pwd.type = 'text';
+            open.classList.add('hidden');
+            close.classList.remove('hidden');
+        } else {
+            pwd.type = 'password';
+            open.classList.remove('hidden');
+            close.classList.add('hidden');
+        }
+    });
+
+    // 回车提交
+    ['username', 'password', 'code'].forEach(function (id) {
+        document.getElementById(id).addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); form.requestSubmit(); }
+        });
+    });
+
+    // 提交
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        errBox.classList.add('hidden');
+        btn.disabled = true;
+        btnText.textContent = '登录中...';
+
+        var body = new URLSearchParams();
+        body.append('username', document.getElementById('username').value);
+        body.append('password', document.getElementById('password').value);
+        body.append('code', document.getElementById('code').value);
+
+        fetch("{:url('auth/login')}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.code === 0) {
+                btnText.textContent = '登录成功';
+                window.location.href = res.url;
+            } else {
+                showError(res.msg || '登录失败');
+                btn.disabled = false;
+                btnText.textContent = '立即登录';
+            }
+        })
+        .catch(function () {
+            showError('网络错误，请重试');
+            btn.disabled = false;
+            btnText.textContent = '立即登录';
+        });
+    });
+})();
+</script>
+</body>
+</html>
