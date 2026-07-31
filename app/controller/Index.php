@@ -1,18 +1,27 @@
 <?php
+declare (strict_types = 1);
 
 namespace app\controller;
 
 use app\BaseController;
+use think\facade\View;
 
+/**
+ * 后台首页控制器
+ * 访问需要登录（见 $middleware 与路由分组）
+ */
 class Index extends BaseController
 {
+    // 该控制器所有方法都需要登录
+    protected $middleware = [\app\middleware\AdminAuth::class];
+
     public function index()
     {
-        return '<style>*{ padding: 0; margin: 0; }</style><iframe src="https://www.thinkphp.cn/welcome?version=' . \think\facade\App::version() . '" width="100%" height="100%" frameborder="0" scrolling="auto"></iframe>';
-    }
-
-    public function hello($name = 'ThinkPHP8')
-    {
-        return 'hello,' . $name;
+        View::assign([
+            'admin_name'     => $this->request->admin_name ?? '管理员',
+            'admin_username' => $this->request->admin_username ?? '',
+            'admin_id'       => $this->request->admin_id ?? 0,
+        ]);
+        return View::fetch('index');
     }
 }

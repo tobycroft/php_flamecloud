@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云后台 - 首页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+<!-- 顶栏 -->
+<header class="bg-white border-b border-gray-200 sticky top-0 z-20">
+    <div class="px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 text-white flex items-center justify-center font-bold">焰</div>
+            <span class="font-semibold text-lg">火焰云管理后台</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block">
+                <div class="text-sm font-medium">{$admin_name}</div>
+                <div class="text-xs text-gray-400">@{$admin_username}</div>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold">
+                {:mb_substr((string)$admin_name, 0, 1)}
+            </div>
+            <a href="{:url('auth/logout')}" class="text-sm text-gray-500 hover:text-red-500 transition-colors">退出</a>
+        </div>
+    </div>
+</header>
+
+<!-- 主体 -->
+<main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold">欢迎回来，{$admin_name}</h1>
+        <p class="text-gray-500 text-sm mt-1">这里是后台管理首页，后续将在此展示各功能模块。</p>
+    </div>
+
+    <!-- 快捷入口（占位） -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
+            </div>
+            <div class="font-semibold">用户管理</div>
+            <div class="text-xs text-gray-400 mt-1">前台用户与权限</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+            </div>
+            <div class="font-semibold">财务管理</div>
+            <div class="text-xs text-gray-400 mt-1">充值审核与流水</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h4m0 0l-3-3m3 3l-3 3M5 7a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            </div>
+            <div class="font-semibold">工单系统</div>
+            <div class="text-xs text-gray-400 mt-1">用户工单处理</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div class="font-semibold">系统设置</div>
+            <div class="text-xs text-gray-400 mt-1">参数与配置</div>
+        </div>
+    </div>
+
+    <!-- 登录信息卡 -->
+    <div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+        <h2 class="font-semibold mb-4">当前登录信息</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+                <div class="text-gray-400 mb-1">管理员ID</div>
+                <div class="font-medium">{$admin_id}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 mb-1">账号</div>
+                <div class="font-medium">{$admin_username}</div>
+            </div>
+            <div>
+                <div class="text-gray-400 mb-1">昵称</div>
+                <div class="font-medium">{$admin_name}</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>
