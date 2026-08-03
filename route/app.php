@@ -26,4 +26,8 @@ Route::group(function () {
 
     Route::get('admin_log_login', 'adminLogLogin/index');
     Route::get('admin_log_login/index', 'adminLogLogin/index');
+
+    Route::get('system_param', 'systemParam/index');
+    Route::get('system_param/index', 'systemParam/index');
+    Route::post('system_param/save', 'systemParam/save');
 });

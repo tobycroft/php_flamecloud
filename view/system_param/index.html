@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 参数配置</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">参数配置</h1>
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">ID</th>
+                            <th class="px-5 py-3 text-left font-medium">Key</th>
+                            <th class="px-5 py-3 text-left font-medium">Value</th>
+                            <th class="px-5 py-3 text-left font-medium">更新时间</th>
+                            <th class="px-5 py-3 text-left font-medium">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <?php if (empty($list)): ?>
+                        <tr>
+                            <td colspan="5" class="px-5 py-16 text-center text-gray-400">暂无参数</td>
+                        </tr>
+                        <?php else: ?>
+                        <?php foreach ($list as $item): ?>
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-5 py-3.5 text-gray-500">#{$item.id}</td>
+                            <td class="px-5 py-3.5">
+                                <span class="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">{$item.key}</span>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <input type="text" id="val_{$item.id}" value="{$item.value}"
+                                    class="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm w-64" />
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.updated_at}</td>
+                            <td class="px-5 py-3.5">
+                                <button onclick="saveParam({$item.id})"
+                                    class="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-medium transition-colors">保存</button>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function saveParam(id) {
+    var val = document.getElementById('val_' + id).value;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '{:url("system_param/save")}', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+        var res = JSON.parse(xhr.responseText);
+        if (res.code === 0) {
+            showToast('保存成功');
+        } else {
+            showToast(res.msg || '保存失败', 'error');
+        }
+    };
+    xhr.send('id=' + id + '&value=' + encodeURIComponent(val));
+}
+</script>
+
+{include file="common/footer" /}
+
+</body>
+</html>
