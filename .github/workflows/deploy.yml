@@ -16,7 +16,7 @@ jobs:
       - name: Deploy to flamecloud_admin
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.GH_PAT }}
+          deploy_key: ${{ secrets.GH_PAT }}
           external_repository: flamecloudcn/php_flamecloud_admin
           publish_dir: ./
           publish_branch: master
