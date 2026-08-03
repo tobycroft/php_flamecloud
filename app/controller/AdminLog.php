@@ -12,7 +12,7 @@ use think\facade\View;
 /**
  * 管理员操作日志控制器
  */
-class AdminLogController extends BaseController
+class AdminLog extends BaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 
