@@ -8,6 +8,7 @@ use app\model\AdminUser;
 use app\model\AdminLoginLog;
 use think\facade\Session;
 use think\facade\View;
+use Tobycroft\AossSdk\Captcha;
 
 /**
  * 后台认证控制器
@@ -15,12 +16,20 @@ use think\facade\View;
  */
 class Auth extends BaseController
 {
+    private Captcha $captcha;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $token = env('AOSS_TOKEN', '');
+        $this->captcha = new Captcha($token);
+    }
+
     /**
      * 登录页
      */
     public function login()
     {
-        // 已登录直接进首页
         if (Session::get('admin_id')) {
             return redirect((string) url('index/index'));
         }
@@ -42,10 +51,11 @@ class Auth extends BaseController
             return json(['code' => 1, 'msg' => '请输入用户名和密码']);
         }
 
-        // 验证码校验
-        $sessCode = (string) Session::get('admin_captcha');
-        Session::delete('admin_captcha');
-        if (strtolower($code) !== strtolower($sessCode)) {
+        $ident = (string) Session::get('admin_captcha_ident');
+        Session::delete('admin_captcha_ident');
+
+        $ret = $this->captcha->check_in_time($ident, $code, 300);
+        if (!$ret->isSuccess()) {
             return json(['code' => 1, 'msg' => '验证码错误']);
         }
 
@@ -65,7 +75,6 @@ class Auth extends BaseController
             return json(['code' => 1, 'msg' => '密码错误']);
         }
 
-        // 登录成功
         AdminUser::updateLastLogin((int) $admin->id, $ip);
         AdminLoginLog::record((int) $admin->id, $username, $ip, $ua, true);
 
@@ -86,54 +95,26 @@ class Auth extends BaseController
     }
 
     /**
-     * 图形验证码（GD 零依赖）
-     * 输出 PNG 图片流，验证码内容存 session: admin_captcha
+     * GIF 动态验证码（aoss-sdk）
+     * 输出 GIF 图片流，验证码通过 API 校验
      */
     public function captcha()
     {
-        $code   = '';
-        $chars  = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-        for ($i = 0; $i < 4; $i++) {
-            $code .= $chars[random_int(0, strlen($chars) - 1)];
-        }
-        Session::set('admin_captcha', $code);
+        $ident = 'captcha_' . uniqid() . '_' . mt_rand();
+        Session::set('admin_captcha_ident', $ident);
 
-        $w = 120;
-        $h = 40;
-        $img = imagecreatetruecolor($w, $h);
+        $gif = $this->captcha->gif_number_fast($ident);
 
-        // 背景色
-        $bg = imagecolorallocate($img, 245, 247, 250);
-        imagefilledrectangle($img, 0, 0, $w, $h, $bg);
-
-        // 干扰点
-        for ($i = 0; $i < 80; $i++) {
-            $c = imagecolorallocate($img, random_int(180, 230), random_int(180, 230), random_int(180, 230));
-            imagesetpixel($img, random_int(0, $w - 1), random_int(0, $h - 1), $c);
-        }
-        // 干扰线
-        for ($i = 0; $i < 3; $i++) {
-            $c = imagecolorallocate($img, random_int(150, 200), random_int(150, 200), random_int(150, 200));
-            imageline($img, random_int(0, $w), random_int(0, $h), random_int(0, $w), random_int(0, $h), $c);
-        }
-
-        // 文字
-        $colors = [
-            imagecolorallocate($img, 22, 119, 255),
-            imagecolorallocate($img, 255, 107, 53),
-            imagecolorallocate($img, 34, 197, 94),
-            imagecolorallocate($img, 139, 92, 246),
-        ];
-        for ($i = 0; $i < 4; $i++) {
-            imagestring($img, 5, 12 + $i * 26, 10 + random_int(-2, 4), $code[$i], $colors[$i % count($colors)]);
+        if ($gif === false) {
+            http_response_code(500);
+            exit('验证码生成失败');
         }
 
         ob_end_clean();
-        header('Content-Type: image/png');
+        header('Content-Type: image/gif');
         header('Cache-Control: no-cache, no-store, must-revalidate');
         header('Pragma: no-cache');
-        imagepng($img);
-        imagedestroy($img);
+        echo $gif;
         exit;
     }
 }

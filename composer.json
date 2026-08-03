@@ -24,7 +24,8 @@
         "topthink/framework": "^8.1",
         "topthink/think-orm": "^4.0",
         "topthink/think-filesystem": "^3.0",
-        "topthink/think-view": "^2.0"
+        "topthink/think-view": "^2.0",
+        "tobycroft/aoss-sdk": "^1.24"
     },
     "require-dev": {
         "topthink/think-dumper": "^1.0",
