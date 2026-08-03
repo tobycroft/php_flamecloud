@@ -1,0 +1,29 @@
+name: Deploy to GitHub Repository
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Configure Git
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        
+    - name: Push to target repository
+      env:
+        GH_PAT: ${{ secrets.GH_PAT }}
+      run: |
+        git remote add target https://x-access-token:${GH_PAT}@github.com/flamecloudcn/php_flamecloud_admin.git
+        git push target HEAD:main --force
+        echo "✅ Successfully pushed to flamecloudcn/php_flamecloud_admin"
