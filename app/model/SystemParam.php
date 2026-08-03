@@ -7,7 +7,7 @@ use think\Model;
 
 class SystemParam extends Model
 {
-    protected $name = 'system_param';
+    protected $table = 'system_param';
 
     public static function getVal(string $key, string $default = ''): string
     {
