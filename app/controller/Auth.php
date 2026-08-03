@@ -6,11 +6,9 @@ namespace app\controller;
 use app\BaseController;
 use app\model\AdminUser;
 use app\model\AdminLoginLog;
-use app\model\SystemParam;
 use think\App;
 use think\facade\Session;
 use think\facade\View;
-use Tobycroft\AossSdk\Captcha;
 
 /**
  * 后台认证控制器
@@ -18,13 +16,9 @@ use Tobycroft\AossSdk\Captcha;
  */
 class Auth extends BaseController
 {
-    private Captcha $captcha;
-
     public function __construct(App $app)
     {
         parent::__construct($app);
-        $token = SystemParam::getVal('aoss');
-        $this->captcha = new Captcha($token);
     }
 
     /**
@@ -53,11 +47,10 @@ class Auth extends BaseController
             return json(['code' => 1, 'msg' => '请输入用户名和密码']);
         }
 
-        $ident = (string) Session::get('admin_captcha_ident');
-        Session::delete('admin_captcha_ident');
+        $captchaCode = (string) Session::get('admin_captcha_code');
+        Session::delete('admin_captcha_code');
 
-        $ret = $this->captcha->check($ident, $code);
-        if (!$ret->isSuccess()) {
+        if (empty($captchaCode) || strtolower($code) !== strtolower($captchaCode)) {
             return json(['code' => 1, 'msg' => '验证码错误']);
         }
 
@@ -97,26 +90,49 @@ class Auth extends BaseController
     }
 
     /**
-     * GIF 动态验证码（aoss-sdk）
-     * 输出 GIF 图片流，验证码通过 API 校验
+     * 普通静态验证码
+     * 输出 PNG 图片流，验证码存 Session 校验
      */
     public function captcha()
     {
-        $ident = 'captcha_' . uniqid() . '_' . mt_rand();
-        Session::set('admin_captcha_ident', $ident);
+        $width = 120;
+        $height = 40;
+        $length = 4;
+        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        $code = '';
+        for ($i = 0; $i < $length; $i++) {
+            $code .= $chars[mt_rand(0, strlen($chars) - 1)];
+        }
+        Session::set('admin_captcha_code', $code);
 
-        $gif = $this->captcha->gif_number_fast($ident);
+        $image = imagecreatetruecolor($width, $height);
+        $bgColor = imagecolorallocate($image, 255, 255, 255);
+        imagefill($image, 0, 0, $bgColor);
 
-        if ($gif === false) {
-            http_response_code(500);
-            exit('验证码生成失败');
+        for ($i = 0; $i < 5; $i++) {
+            $lineColor = imagecolorallocate($image, mt_rand(100, 200), mt_rand(100, 200), mt_rand(100, 200));
+            imageline($image, mt_rand(0, $width), mt_rand(0, $height), mt_rand(0, $width), mt_rand(0, $height), $lineColor);
+        }
+        for ($i = 0; $i < 50; $i++) {
+            $pixelColor = imagecolorallocate($image, mt_rand(150, 255), mt_rand(150, 255), mt_rand(150, 255));
+            imagesetpixel($image, mt_rand(0, $width), mt_rand(0, $height), $pixelColor);
+        }
+
+        $font = 5;
+        $fontWidth = imagefontwidth($font);
+        $fontHeight = imagefontheight($font);
+        $x = ($width - $fontWidth * $length) / 2;
+        $y = ($height - $fontHeight) / 2;
+        for ($i = 0; $i < $length; $i++) {
+            $charColor = imagecolorallocate($image, mt_rand(0, 100), mt_rand(20, 120), mt_rand(40, 140));
+            imagestring($image, $font, (int)$x + $i * $fontWidth + mt_rand(-2, 2), (int)$y + mt_rand(-2, 2), $code[$i], $charColor);
         }
 
         ob_end_clean();
-        header('Content-Type: image/gif');
+        header('Content-Type: image/png');
         header('Cache-Control: no-cache, no-store, must-revalidate');
         header('Pragma: no-cache');
-        echo $gif;
+        imagepng($image);
         exit;
     }
 }
