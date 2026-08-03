@@ -20,16 +20,17 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         
-    - name: Setup SSH Key
+    - name: Setup SSH Key (Base64 decoded)
+      env:
+        SSH_PRIVATE_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY_B64 }}
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+        echo "${SSH_PRIVATE_KEY_B64}" | base64 -d > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan github.com >> ~/.ssh/known_hosts
+        echo "✅ SSH key setup completed"
         
     - name: Push to target repository using SSH
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
         git remote add target git@github.com:flamecloudcn/php_flamecloud_admin.git
         GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" git push target HEAD:main --force
