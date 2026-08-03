@@ -22,6 +22,6 @@ class Index extends BaseController
             'admin_username' => $this->request->admin_username ?? '',
             'admin_id'       => $this->request->admin_id ?? 0,
         ]);
-        return View::fetch('index');
+        return View::fetch('/index');
     }
 }
