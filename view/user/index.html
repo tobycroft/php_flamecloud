@@ -3,34 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>火焰云后台 - 首页</title>
+    <title>火焰云后台 - 用户列表</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif; }
         .sidebar-scroll { scrollbar-width: thin; scrollbar-color: #e5e7eb transparent; }
         .sidebar-scroll::-webkit-scrollbar { width: 4px; }
         .sidebar-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+        .pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+        .pagination li { display: inline-block; }
+        .pagination a, .pagination span {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 34px; height: 34px; padding: 0 10px;
+            border: 1px solid #e5e7eb; border-radius: 6px;
+            font-size: 13px; color: #4b5563;
+            transition: all .15s;
+        }
+        .pagination a:hover { background: #f9fafb; color: #111827; border-color: #d1d5db; }
+        .pagination .active span, .pagination .active a {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border-color: transparent; color: #fff; font-weight: 500;
+        }
+        .pagination .disabled span { color: #d1d5db; cursor: not-allowed; background: #fafafa; }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900">
 
-<!-- 移动端遮罩 -->
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
 
-<!-- 侧边栏 -->
 <aside id="sidebar" class="fixed top-0 left-0 z-40 h-full w-60 bg-white border-r border-gray-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
-    <!-- Logo -->
     <div class="h-16 flex items-center gap-3 px-5 border-b border-gray-100 shrink-0">
         <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 text-white flex items-center justify-center font-bold text-sm">焰</div>
         <span class="font-semibold text-base">火焰云后台</span>
     </div>
 
-    <!-- 菜单 -->
     <nav class="flex-1 overflow-y-auto sidebar-scroll py-3 px-3">
         <div id="menuContainer"></div>
     </nav>
 
-    <!-- 底部用户信息 -->
     <div class="border-t border-gray-100 px-4 py-3 shrink-0">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold text-sm">
@@ -47,78 +57,83 @@
     </div>
 </aside>
 
-<!-- 主内容区 -->
 <div class="lg:ml-60 min-h-screen flex flex-col">
-    <!-- 顶栏 -->
     <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
         <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-        <h1 id="pageTitle" class="text-lg font-semibold">首页</h1>
+        <h1 id="pageTitle" class="text-lg font-semibold">用户列表</h1>
     </header>
 
-    <!-- 内容 -->
     <main class="flex-1 p-6">
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold">欢迎回来，{$admin_name}</h2>
-            <p class="text-gray-500 text-sm mt-1">这里是后台管理首页，后续将在此展示各功能模块。</p>
-        </div>
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
+                <form method="get" action="{:url('user/index')}" class="flex items-center gap-2 flex-wrap">
+                    <input type="text" name="keyword" value="{$keyword}" placeholder="搜索用户名 / 手机号 / 邮箱"
+                        class="px-4 py-2 w-64 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                    <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
+                    <?php if ($keyword !== ''): ?>
+                    <a href="{:url('user/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
+                    <?php endif; ?>
+                </form>
+                <div class="text-sm text-gray-500">
+                    共 <span class="font-semibold text-gray-900">{$total}</span> 位用户
+                </div>
+            </div>
 
-        <!-- 快捷入口 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1a4 4 0 10-4-4 4 4 0 004 4z"/></svg>
-                </div>
-                <div class="font-semibold">用户管理</div>
-                <div class="text-xs text-gray-400 mt-1">前台用户与权限</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">ID</th>
+                            <th class="px-5 py-3 text-left font-medium">用户名</th>
+                            <th class="px-5 py-3 text-left font-medium">手机号</th>
+                            <th class="px-5 py-3 text-left font-medium">邮箱</th>
+                            <th class="px-5 py-3 text-left font-medium">注册时间</th>
+                            <th class="px-5 py-3 text-left font-medium">更新时间</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <?php if ($total == 0): ?>
+                        <tr>
+                            <td colspan="6" class="px-5 py-16 text-center text-gray-400">暂无用户数据</td>
+                        </tr>
+                        <?php else: ?>
+                        <?php foreach ($list as $item): ?>
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-5 py-3.5 text-gray-500">#{$item.id}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold text-xs">
+                                        {:mb_substr((string)$item['username'], 0, 1)}
+                                    </div>
+                                    <span class="font-medium">{$item.username}</span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-600 font-mono text-xs">{$item.phone ?: '-'}</td>
+                            <td class="px-5 py-3.5 text-gray-600 text-xs">{$item.email ?: '-'}</td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.created_at}</td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.updated_at}</td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center mb-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-                </div>
-                <div class="font-semibold">财务管理</div>
-                <div class="text-xs text-gray-400 mt-1">充值审核与流水</div>
-            </div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h4m0 0l-3-3m3 3l-3 3M5 7a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
-                <div class="font-semibold">工单系统</div>
-                <div class="text-xs text-gray-400 mt-1">用户工单处理</div>
-            </div>
-            <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                <div class="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                </div>
-                <div class="font-semibold">系统设置</div>
-                <div class="text-xs text-gray-400 mt-1">参数与配置</div>
-            </div>
-        </div>
 
-        <!-- 登录信息卡 -->
-        <div class="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-            <h2 class="font-semibold mb-4">当前登录信息</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <div class="text-gray-400 mb-1">管理员ID</div>
-                    <div class="font-medium">{$admin_id}</div>
-                </div>
-                <div>
-                    <div class="text-gray-400 mb-1">账号</div>
-                    <div class="font-medium">{$admin_username}</div>
-                </div>
-                <div>
-                    <div class="text-gray-400 mb-1">昵称</div>
-                    <div class="font-medium">{$admin_name}</div>
+            <?php if ($totalPage > 1): ?>
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+                <div class="text-sm text-gray-500">第 {$page} / {$totalPage} 页</div>
+                <div class="pagination">
+                    {$pages|raw}
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </main>
 </div>
 
 <script>
-// 菜单配置：一级菜单 + 二级菜单
 const menus = [
     {
         title: '首页',
@@ -151,7 +166,7 @@ const menus = [
     },
     {
         title: '系统设置',
-        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.572c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
         children: [
             { title: '参数配置', url: '#' },
             { title: '管理员管理', url: '{:url("admin/index")}' }
@@ -159,68 +174,39 @@ const menus = [
     }
 ];
 
-// 从 localStorage 读取展开状态
 const expandedKey = 'sidebar_expanded';
-let expanded = JSON.parse(localStorage.getItem(expandedKey) || '[]');
+let expanded = JSON.parse(localStorage.getItem(expandedKey) || '["用户管理"]');
 
-function saveExpanded() {
-    localStorage.setItem(expandedKey, JSON.stringify(expanded));
-}
-
-function isExpanded(title) {
-    return expanded.indexOf(title) !== -1;
-}
-
+function saveExpanded() { localStorage.setItem(expandedKey, JSON.stringify(expanded)); }
+function isExpanded(title) { return expanded.indexOf(title) !== -1; }
 function toggleMenu(title) {
     const idx = expanded.indexOf(title);
-    if (idx !== -1) {
-        expanded.splice(idx, 1);
-    } else {
-        expanded.push(title);
-    }
-    saveExpanded();
-    renderMenu();
+    idx !== -1 ? expanded.splice(idx, 1) : expanded.push(title);
+    saveExpanded(); renderMenu();
 }
-
-function isActive(url) {
-    if (url === '#') return false;
-    return window.location.pathname === url;
-}
-
-function isParentActive(children) {
-    return children.some(function(c) { return isActive(c.url); });
-}
-
-function updatePageTitle(title) {
-    document.getElementById('pageTitle').textContent = title;
-}
+function isActive(url) { if (url === '#') return false; return window.location.pathname === url; }
+function isParentActive(children) { return children.some(function(c) { return isActive(c.url); }); }
+function updatePageTitle(title) { document.getElementById('pageTitle').textContent = title; }
 
 function renderMenu() {
     var container = document.getElementById('menuContainer');
     var html = '';
-
     menus.forEach(function(menu) {
         if (menu.children.length === 0) {
-            // 无子菜单：直接链接
             var active = isActive(menu.url);
             html += '<a href="' + menu.url + '" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm transition-colors ' +
                 (active ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">' +
-                menu.icon +
-                '<span>' + menu.title + '</span>' +
-                '</a>';
+                menu.icon + '<span>' + menu.title + '</span></a>';
             if (active) updatePageTitle(menu.title);
         } else {
-            // 有子菜单
             var open = isExpanded(menu.title);
             var parentActive = isParentActive(menu.children);
             html += '<div class="mb-0.5">';
             html += '<div onclick="toggleMenu(\'' + menu.title + '\')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ' +
                 (parentActive ? 'text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">';
-            html += menu.icon;
-            html += '<span class="flex-1">' + menu.title + '</span>';
+            html += menu.icon + '<span class="flex-1">' + menu.title + '</span>';
             html += '<svg class="w-4 h-4 transition-transform duration-150 ' + (open ? 'rotate-90' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
             html += '</div>';
-
             html += '<div class="overflow-hidden transition-all duration-200 ' + (open ? 'max-h-96' : 'max-h-0') + '">';
             html += '<div class="ml-8 mt-0.5 mb-1 space-y-0.5">';
             menu.children.forEach(function(child) {
@@ -230,34 +216,22 @@ function renderMenu() {
                     child.title + '</a>';
                 if (childActive) updatePageTitle(child.title);
             });
-            html += '</div></div>';
-            html += '</div>';
+            html += '</div></div></div>';
         }
     });
-
     container.innerHTML = html;
 }
 
-// 移动端侧边栏切换
 function toggleSidebar() {
-    var sidebar = document.getElementById('sidebar');
-    var overlay = document.getElementById('sidebarOverlay');
-    var isOpen = sidebar.classList.contains('-translate-x-full');
-    if (isOpen) {
-        sidebar.classList.remove('-translate-x-full');
-        overlay.classList.remove('hidden');
-    } else {
-        sidebar.classList.add('-translate-x-full');
-        overlay.classList.add('hidden');
-    }
+    var sidebar = document.getElementById('sidebar'), overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
 }
-
 function closeSidebar() {
     document.getElementById('sidebar').classList.add('-translate-x-full');
     document.getElementById('sidebarOverlay').classList.add('hidden');
 }
 
-// 初始化
 renderMenu();
 </script>
 

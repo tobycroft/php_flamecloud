@@ -16,4 +16,7 @@ Route::group(function () {
     Route::post('admin/edit', 'admin/edit');
     Route::post('admin/status', 'admin/status');
     Route::post('admin/delete', 'admin/delete');
+
+    Route::get('user', 'user/index');
+    Route::get('user/index', 'user/index');
 });
