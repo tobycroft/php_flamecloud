@@ -4,10 +4,10 @@ declare (strict_types = 1);
 namespace app\controller;
 
 use app\BaseController;
-use app\model\AdminUser;
-use app\model\AdminLoginLog;
-use app\model\AdminLog;
-use app\model\SystemParam;
+use app\model\AdminUserModel;
+use app\model\AdminLoginLogModel;
+use app\model\AdminLogModel;
+use app\model\SystemParamModel;
 use think\App;
 use think\facade\Session;
 use think\facade\View;
@@ -57,7 +57,7 @@ class Auth extends BaseController
             return json(['code' => 1, 'msg' => '验证码已过期，请刷新']);
         }
 
-        $token = SystemParam::getVal('captcha_token');
+        $token = SystemParamModel::getVal('captcha_token');
         if (empty($token)) {
             return json(['code' => 1, 'msg' => '系统配置错误']);
         }
@@ -69,26 +69,26 @@ class Auth extends BaseController
             return json(['code' => 1, 'msg' => '验证码错误']);
         }
 
-        $admin = AdminUser::findByUsername($username);
+        $admin = AdminUserModel::findByUsername($username);
         if (empty($admin)) {
-            AdminLoginLog::record(0, $username, $ip, $ua, false);
+            AdminLoginLogModel::record(0, $username, $ip, $ua, false);
             return json(['code' => 1, 'msg' => '用户不存在或已禁用']);
         }
 
         if ((int) $admin->status !== 1) {
-            AdminLoginLog::record((int) $admin->id, $username, $ip, $ua, false);
+            AdminLoginLogModel::record((int) $admin->id, $username, $ip, $ua, false);
             return json(['code' => 1, 'msg' => '账号已禁用']);
         }
 
         if (md5($password) !== $admin->password) {
-            AdminLoginLog::record((int) $admin->id, $username, $ip, $ua, false);
+            AdminLoginLogModel::record((int) $admin->id, $username, $ip, $ua, false);
             return json(['code' => 1, 'msg' => '密码错误']);
         }
 
-        AdminUser::updateLastLogin((int) $admin->id, $ip);
-        AdminLoginLog::record((int) $admin->id, $username, $ip, $ua, true);
+        AdminUserModel::updateLastLogin((int) $admin->id, $ip);
+        AdminLoginLogModel::record((int) $admin->id, $username, $ip, $ua, true);
 
-        AdminLog::record([
+        AdminLogModel::record([
             'admin_id'    => (int) $admin->id,
             'admin_name'  => (string) $admin->nickname ?: $admin->username,
             'type_code'   => 'admin_login',
@@ -118,7 +118,7 @@ class Auth extends BaseController
         $ua        = (string) $this->request->header('user-agent', '');
 
         if ($adminId > 0) {
-            AdminLog::record([
+            AdminLogModel::record([
                 'admin_id'    => $adminId,
                 'admin_name'  => $adminName,
                 'type_code'   => 'admin_logout',
@@ -141,7 +141,7 @@ class Auth extends BaseController
      */
     public function captcha()
     {
-        $token = SystemParam::getVal('captcha_token');
+        $token = SystemParamModel::getVal('captcha_token');
         if (empty($token)) {
             exit('Captcha token not configured');
         }

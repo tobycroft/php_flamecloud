@@ -4,8 +4,8 @@ declare (strict_types = 1);
 namespace app\controller;
 
 use app\BaseController;
-use app\model\AdminUser;
-use app\model\AdminLog;
+use app\model\AdminUserModel;
+use app\model\AdminLogModel;
 use think\facade\Session;
 use think\facade\View;
 
@@ -32,7 +32,7 @@ class Admin extends BaseController
         $page    = (int) $this->request->get('page', 1);
         $limit   = 15;
 
-        $result = AdminUser::getList($page, $limit, $keyword);
+        $result = AdminUserModel::getList($page, $limit, $keyword);
         $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
 
         View::assign([
@@ -67,12 +67,12 @@ class Admin extends BaseController
                 return json(['code' => 1, 'msg' => '密码长度不能少于6位']);
             }
 
-            $exists = AdminUser::findByUsername($username);
+            $exists = AdminUserModel::findByUsername($username);
             if ($exists) {
                 return json(['code' => 1, 'msg' => '用户名已存在']);
             }
 
-            $ret = AdminUser::add([
+            $ret = AdminUserModel::add([
                 'username' => $username,
                 'password' => $password,
                 'nickname' => $nickname,
@@ -80,7 +80,7 @@ class Admin extends BaseController
             ]);
 
             if ($ret) {
-                AdminLog::record(array_merge($this->getLogMeta(), [
+                AdminLogModel::record(array_merge($this->getLogMeta(), [
                     'type_code'   => 'admin_add',
                     'action'      => '添加管理员',
                     'detail'      => '添加管理员 ' . $username . ($nickname ? ' (' . $nickname . ')' : ''),
@@ -122,7 +122,7 @@ class Admin extends BaseController
                 $data['password'] = $password;
             }
 
-            $ret = AdminUser::edit($id, $data);
+            $ret = AdminUserModel::edit($id, $data);
             if ($ret) {
                 $detail = '修改管理员 ' . $id;
                 if ($nickname !== '') {
@@ -132,7 +132,7 @@ class Admin extends BaseController
                     $detail .= ' 密码已重置';
                 }
                 $detail .= ' 状态=' . ($status === 1 ? '启用' : '禁用');
-                AdminLog::record(array_merge($this->getLogMeta(), [
+                AdminLogModel::record(array_merge($this->getLogMeta(), [
                     'type_code'   => 'admin_edit',
                     'action'      => '编辑管理员',
                     'detail'      => $detail,
@@ -148,7 +148,7 @@ class Admin extends BaseController
         if ($id <= 0) {
             return json(['code' => 1, 'msg' => '参数错误']);
         }
-        $admin = AdminUser::findById($id);
+        $admin = AdminUserModel::findById($id);
         if (empty($admin)) {
             return json(['code' => 1, 'msg' => '管理员不存在']);
         }
@@ -178,9 +178,9 @@ class Admin extends BaseController
         }
 
         $status = $status === 1 ? 1 : 0;
-        $ret = AdminUser::setStatus($id, $status);
+        $ret = AdminUserModel::setStatus($id, $status);
         if ($ret) {
-            AdminLog::record(array_merge($this->getLogMeta(), [
+            AdminLogModel::record(array_merge($this->getLogMeta(), [
                 'type_code'   => 'admin_status',
                 'action'      => '启用/禁用管理员',
                 'detail'      => ($status === 1 ? '启用' : '禁用') . '管理员 ID=' . $id,
@@ -207,9 +207,9 @@ class Admin extends BaseController
             return json(['code' => 1, 'msg' => '不能删除当前登录账号']);
         }
 
-        $ret = AdminUser::remove($id);
+        $ret = AdminUserModel::remove($id);
         if ($ret) {
-            AdminLog::record(array_merge($this->getLogMeta(), [
+            AdminLogModel::record(array_merge($this->getLogMeta(), [
                 'type_code'   => 'admin_delete',
                 'action'      => '删除管理员',
                 'detail'      => '删除管理员 ID=' . $id,

@@ -4,8 +4,8 @@ declare (strict_types = 1);
 namespace app\controller;
 
 use app\BaseController;
-use app\model\AdminLog;
-use app\model\AdminLogType;
+use app\model\AdminLogModel;
+use app\model\AdminLogTypeModel;
 use think\facade\Session;
 use think\facade\View;
 
@@ -23,9 +23,9 @@ class AdminLogController extends BaseController
         $page     = (int) $this->request->get('page', 1);
         $limit    = 15;
 
-        $result    = AdminLog::getList($page, $limit, $typeCode, $keyword);
+        $result    = AdminLogModel::getList($page, $limit, $typeCode, $keyword);
         $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
-        $types     = AdminLogType::getAll();
+        $types     = AdminLogTypeModel::getAll();
 
         View::assign([
             'list'            => $result['list'],

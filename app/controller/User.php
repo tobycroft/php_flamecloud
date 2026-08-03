@@ -4,8 +4,8 @@ declare (strict_types = 1);
 namespace app\controller;
 
 use app\BaseController;
-use app\model\FcUser;
-use app\model\AdminLog;
+use app\model\FcUserModel;
+use app\model\AdminLogModel;
 use think\facade\Session;
 use think\facade\View;
 
@@ -22,7 +22,7 @@ class User extends BaseController
         $page    = (int) $this->request->get('page', 1);
         $limit   = 15;
 
-        $result = FcUser::getList($page, $limit, $keyword);
+        $result = FcUserModel::getList($page, $limit, $keyword);
         $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
 
         View::assign([
@@ -51,9 +51,9 @@ class User extends BaseController
         }
 
         $status = $status === 1 ? 1 : 0;
-        $ret = FcUser::setStatus($id, $status);
+        $ret = FcUserModel::setStatus($id, $status);
         if ($ret) {
-            AdminLog::record([
+            AdminLogModel::record([
                 'admin_id'    => (int) Session::get('admin_id', 0),
                 'admin_name'  => (string) Session::get('admin_name', ''),
                 'type_code'   => 'user_status',

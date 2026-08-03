@@ -9,7 +9,7 @@ use think\Model;
  * 管理员操作日志模型
  * 表 admin_log（DB_PREFIX=admin_ + name=log）
  */
-class AdminLog extends Model
+class AdminLogModel extends Model
 {
     protected $name = 'log';
 

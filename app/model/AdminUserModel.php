@@ -10,7 +10,7 @@ use think\facade\Db;
  * 后台管理员模型
  * 表 admin_user（DB_PREFIX=admin_ + name=user）
  */
-class AdminUser extends Model
+class AdminUserModel extends Model
 {
     protected $name = 'user';
 

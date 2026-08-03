@@ -5,7 +5,7 @@ namespace app\model;
 
 use think\Model;
 
-class SystemParam extends Model
+class SystemParamModel extends Model
 {
     protected $table = 'system_param';
 
