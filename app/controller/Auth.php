@@ -19,9 +19,9 @@ class Auth extends BaseController
 {
     private Captcha $captcha;
 
-    public function __construct()
+    public function __construct($app)
     {
-        parent::__construct();
+        parent::__construct($app);
         $token = SystemParam::getVal('aoss');
         $this->captcha = new Captcha($token);
     }
