@@ -6,7 +6,6 @@ namespace app\controller;
 use app\BaseController;
 use app\model\AdminUserModel;
 use app\model\AdminLogLoginModel;
-use app\model\AdminLogOperationModel;
 use app\model\SystemParamModel;
 use think\App;
 use think\facade\Session;
@@ -88,18 +87,6 @@ class Auth extends BaseController
         AdminUserModel::updateLastLogin((int) $admin->id, $ip);
         AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, true);
 
-        AdminLogOperationModel::record([
-            'admin_id'    => (int) $admin->id,
-            'admin_name'  => (string) $admin->nickname ?: $admin->username,
-            'type_code'   => 'admin_login',
-            'action'      => '管理员登录',
-            'detail'      => '管理员 ' . $username . ' 登录成功',
-            'target_type' => 'admin',
-            'target_id'   => (int) $admin->id,
-            'ip'          => $ip,
-            'user_agent'  => $ua,
-        ]);
-
         Session::set('admin_id', (int) $admin->id);
         Session::set('admin_name', (string) $admin->nickname ?: $admin->username);
         Session::set('admin_username', (string) $admin->username);
@@ -112,25 +99,6 @@ class Auth extends BaseController
      */
     public function logout()
     {
-        $adminId   = (int) Session::get('admin_id', 0);
-        $adminName = (string) Session::get('admin_name', '');
-        $ip        = $this->request->ip();
-        $ua        = (string) $this->request->header('user-agent', '');
-
-        if ($adminId > 0) {
-            AdminLogOperationModel::record([
-                'admin_id'    => $adminId,
-                'admin_name'  => $adminName,
-                'type_code'   => 'admin_logout',
-                'action'      => '管理员登出',
-                'detail'      => '管理员 ' . $adminName . ' 登出',
-                'target_type' => 'admin',
-                'target_id'   => $adminId,
-                'ip'          => $ip,
-                'user_agent'  => $ua,
-            ]);
-        }
-
         Session::clear();
         return redirect((string) url('auth/login'));
     }
