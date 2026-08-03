@@ -12,6 +12,6 @@ class SystemParam extends Model
     public static function getVal(string $key, string $default = ''): string
     {
         $row = self::where('key', $key)->find();
-        return $row ? (string) $row->val : $default;
+        return $row ? (string) $row->value : $default;
     }
 }
