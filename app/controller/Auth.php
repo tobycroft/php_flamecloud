@@ -6,9 +6,11 @@ namespace app\controller;
 use app\BaseController;
 use app\model\AdminUser;
 use app\model\AdminLoginLog;
+use app\model\SystemParam;
 use think\App;
 use think\facade\Session;
 use think\facade\View;
+use Tobycroft\AossSdk\Captcha;
 
 /**
  * 后台认证控制器
@@ -47,10 +49,22 @@ class Auth extends BaseController
             return json(['code' => 1, 'msg' => '请输入用户名和密码']);
         }
 
-        $captchaCode = (string) Session::get('admin_captcha_code');
-        Session::delete('admin_captcha_code');
+        $captchaIdent = (string) Session::get('admin_captcha_ident');
+        Session::delete('admin_captcha_ident');
 
-        if (empty($captchaCode) || strtolower($code) !== strtolower($captchaCode)) {
+        if (empty($captchaIdent)) {
+            return json(['code' => 1, 'msg' => '验证码已过期，请刷新']);
+        }
+
+        $token = SystemParam::getVal('captcha_token');
+        if (empty($token)) {
+            return json(['code' => 1, 'msg' => '系统配置错误']);
+        }
+
+        $captcha = new Captcha($token);
+        $ret = $captcha->check($captchaIdent, $code);
+
+        if (!$ret->isSuccess()) {
             return json(['code' => 1, 'msg' => '验证码错误']);
         }
 
@@ -90,49 +104,31 @@ class Auth extends BaseController
     }
 
     /**
-     * 普通静态验证码
-     * 输出 PNG 图片流，验证码存 Session 校验
+     * AOSS 动态 GIF 数字验证码
+     * 输出 GIF 图片流，验证码标识存 Session 校验
      */
     public function captcha()
     {
-        $width = 120;
-        $height = 40;
-        $length = 4;
-        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        $code = '';
-        for ($i = 0; $i < $length; $i++) {
-            $code .= $chars[mt_rand(0, strlen($chars) - 1)];
-        }
-        Session::set('admin_captcha_code', $code);
-
-        $image = imagecreatetruecolor($width, $height);
-        $bgColor = imagecolorallocate($image, 255, 255, 255);
-        imagefill($image, 0, 0, $bgColor);
-
-        for ($i = 0; $i < 5; $i++) {
-            $lineColor = imagecolorallocate($image, mt_rand(100, 200), mt_rand(100, 200), mt_rand(100, 200));
-            imageline($image, mt_rand(0, $width), mt_rand(0, $height), mt_rand(0, $width), mt_rand(0, $height), $lineColor);
-        }
-        for ($i = 0; $i < 50; $i++) {
-            $pixelColor = imagecolorallocate($image, mt_rand(150, 255), mt_rand(150, 255), mt_rand(150, 255));
-            imagesetpixel($image, mt_rand(0, $width), mt_rand(0, $height), $pixelColor);
+        $token = SystemParam::getVal('captcha_token');
+        if (empty($token)) {
+            exit('Captcha token not configured');
         }
 
-        $font = 5;
-        $fontWidth = imagefontwidth($font);
-        $fontHeight = imagefontheight($font);
-        $x = ($width - $fontWidth * $length) / 2;
-        $y = ($height - $fontHeight) / 2;
-        for ($i = 0; $i < $length; $i++) {
-            $charColor = imagecolorallocate($image, mt_rand(0, 100), mt_rand(20, 120), mt_rand(40, 140));
-            imagestring($image, $font, (int)$x + $i * $fontWidth + mt_rand(-2, 2), (int)$y + mt_rand(-2, 2), $code[$i], $charColor);
+        $captcha = new Captcha($token);
+        $ident = md5(uniqid('captcha_', true));
+
+        $gif = $captcha->gif_number($ident);
+        if ($gif === false) {
+            exit('Failed to generate captcha');
         }
+
+        Session::set('admin_captcha_ident', $ident);
 
         ob_end_clean();
-        header('Content-Type: image/png');
+        header('Content-Type: image/gif');
         header('Cache-Control: no-cache, no-store, must-revalidate');
         header('Pragma: no-cache');
-        imagepng($image);
+        echo $gif;
         exit;
     }
 }
