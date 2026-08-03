@@ -19,4 +19,24 @@ class FcUser extends Model
     protected $updateTime = 'updated_at';
 
     protected $hidden = ['password'];
+
+    public static function findById(int $id)
+    {
+        return self::find($id);
+    }
+
+    public static function getList(int $page = 1, int $limit = 15, string $keyword = ''): array
+    {
+        $query = self::order('id', 'desc');
+        if ($keyword !== '') {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('username', 'like', '%' . $keyword . '%')
+                  ->whereOr('phone', 'like', '%' . $keyword . '%')
+                  ->whereOr('email', 'like', '%' . $keyword . '%');
+            });
+        }
+        $total = $query->count();
+        $list  = $query->page($page, $limit)->select()->toArray();
+        return ['total' => $total, 'list' => $list];
+    }
 }
