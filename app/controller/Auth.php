@@ -123,6 +123,7 @@ class Auth extends BaseController
         }
 
         Session::set('admin_captcha_ident', $ident);
+        Session::save();
 
         ob_end_clean();
         header('Content-Type: image/gif');
