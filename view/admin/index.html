@@ -233,7 +233,8 @@ function openEditModal(id) {
         document.getElementById('edit_password').value = '';
         document.getElementById('edit_status').value = res.data.status;
         document.getElementById('modalEdit').classList.remove('hidden');
-    });
+    })
+    .catch(function() { showToast('网络错误，请重试', 'error'); });
 }
 function closeEditModal() {
     document.getElementById('modalEdit').classList.add('hidden');
