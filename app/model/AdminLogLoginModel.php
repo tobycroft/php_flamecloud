@@ -15,12 +15,8 @@ class AdminLogLoginModel extends Model
 
     protected $autoWriteTimestamp = 'datetime';
 
-    // 该表只有 create_time，无 update_time
     protected $updateTime = false;
 
-    /**
-     * 记录一次登录尝试
-     */
     public static function record(int $adminId, string $username, string $ip, string $ua, bool $ok): void
     {
         self::create([
@@ -30,5 +26,22 @@ class AdminLogLoginModel extends Model
             'user_agent' => mb_substr($ua, 0, 255),
             'status'     => $ok ? 1 : 0,
         ]);
+    }
+
+    public static function getList(int $page = 1, int $limit = 15, string $keyword = '', string $status = ''): array
+    {
+        $query = self::order('id', 'desc');
+
+        if ($keyword !== '') {
+            $query->where('username', 'like', '%' . $keyword . '%');
+        }
+
+        if ($status !== '') {
+            $query->where('status', (int) $status);
+        }
+
+        $total = $query->count();
+        $list  = $query->page($page, $limit)->select()->toArray();
+        return ['total' => $total, 'list' => $list];
     }
 }

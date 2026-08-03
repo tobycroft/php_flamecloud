@@ -23,4 +23,7 @@ Route::group(function () {
 
     Route::get('admin_log', 'adminLog/index');
     Route::get('admin_log/index', 'adminLog/index');
+
+    Route::get('admin_log_login', 'adminLogLogin/index');
+    Route::get('admin_log_login/index', 'adminLogLogin/index');
 });
