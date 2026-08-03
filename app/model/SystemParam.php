@@ -15,4 +15,3 @@ class SystemParam extends Model
         return $row ? (string) $row->val : $default;
     }
 }
-EOF 
