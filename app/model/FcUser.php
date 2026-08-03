@@ -39,4 +39,14 @@ class FcUser extends Model
         $list  = $query->page($page, $limit)->select()->toArray();
         return ['total' => $total, 'list' => $list];
     }
+
+    public static function setStatus(int $id, int $status): bool
+    {
+        $user = self::find($id);
+        if (empty($user)) {
+            return false;
+        }
+        $user->status = $status;
+        return $user->save();
+    }
 }

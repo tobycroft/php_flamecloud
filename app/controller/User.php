@@ -36,4 +36,24 @@ class User extends BaseController
         ]);
         return View::fetch('/user/index');
     }
+
+    public function status()
+    {
+        if (!$this->request->isPost()) {
+            return json(['code' => 1, 'msg' => '非法请求']);
+        }
+        $id     = (int) $this->request->post('id', 0);
+        $status = (int) $this->request->post('status', 0);
+
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+
+        $status = $status === 1 ? 1 : 0;
+        $ret = FcUser::setStatus($id, $status);
+        if ($ret) {
+            return json(['code' => 0, 'msg' => '操作成功']);
+        }
+        return json(['code' => 1, 'msg' => '操作失败']);
+    }
 }

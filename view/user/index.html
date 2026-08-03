@@ -44,14 +44,15 @@
                             <th class="px-5 py-3 text-left font-medium">用户名</th>
                             <th class="px-5 py-3 text-left font-medium">手机号</th>
                             <th class="px-5 py-3 text-left font-medium">邮箱</th>
+                            <th class="px-5 py-3 text-left font-medium">状态</th>
                             <th class="px-5 py-3 text-left font-medium">注册时间</th>
-                            <th class="px-5 py-3 text-left font-medium">更新时间</th>
+                            <th class="px-5 py-3 text-right font-medium">操作</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         <?php if (empty($list)): ?>
                         <tr>
-                            <td colspan="6" class="px-5 py-16 text-center text-gray-400">暂无用户数据</td>
+                            <td colspan="7" class="px-5 py-16 text-center text-gray-400">暂无用户数据</td>
                         </tr>
                         <?php else: ?>
                         <?php foreach ($list as $item): ?>
@@ -67,8 +68,25 @@
                             </td>
                             <td class="px-5 py-3.5 text-gray-600 font-mono text-xs">{$item.phone ?: '-'}</td>
                             <td class="px-5 py-3.5 text-gray-600 text-xs">{$item.email ?: '-'}</td>
+                            <td class="px-5 py-3.5">
+                                <?php if ((int)$item['status'] === 1): ?>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-600">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>正常
+                                </span>
+                                <?php else: ?>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>已禁用
+                                </span>
+                                <?php endif; ?>
+                            </td>
                             <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.created_at}</td>
-                            <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.updated_at}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button onclick="toggleStatus({$item.id}, <?=(int)$item['status'] === 1 ? 0 : 1?>)" class="px-3 py-1.5 <?=(int)$item['status'] === 1 ? 'text-red-600 hover:bg-red-50' : 'text-green-600 hover:bg-green-50'?> rounded-md text-xs transition-colors">
+                                        <?=(int)$item['status'] === 1 ? '禁用屏蔽' : '解除禁用'?>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                         <?php endif; ?>
@@ -104,6 +122,23 @@
 </div>
 
 {include file="common/footer" /}
+
+<script>
+function toggleStatus(id, status) {
+    var tip = status === 1 ? '确定解除该用户的禁用/屏蔽？' : '确定禁用/屏蔽该用户？';
+    if (!confirm(tip)) return;
+    var body = new URLSearchParams();
+    body.append('id', id); body.append('status', status);
+    fetch("{:url('user/status')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) setTimeout(function() { location.reload(); }, 600);
+    });
+}
+</script>
 
 </body>
 </html>
