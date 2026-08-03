@@ -7,6 +7,7 @@ use app\BaseController;
 use app\model\AdminUser;
 use app\model\AdminLoginLog;
 use app\model\SystemParam;
+use think\App;
 use think\facade\Session;
 use think\facade\View;
 use Tobycroft\AossSdk\Captcha;
@@ -19,7 +20,7 @@ class Auth extends BaseController
 {
     private Captcha $captcha;
 
-    public function __construct($app)
+    public function __construct(App $app)
     {
         parent::__construct($app);
         $token = SystemParam::getVal('aoss');
