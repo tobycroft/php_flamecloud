@@ -7,11 +7,11 @@ use think\Model;
 
 /**
  * 后台登录日志模型
- * 表 admin_login_log（DB_PREFIX=admin_ + name=login_log）
+ * 表 admin_log_login（DB_PREFIX=admin_ + name=log_login）
  */
-class AdminLoginLogModel extends Model
+class AdminLogLoginModel extends Model
 {
-    protected $name = 'login_log';
+    protected $name = 'log_login';
 
     protected $autoWriteTimestamp = 'datetime';
 

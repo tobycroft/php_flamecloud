@@ -5,7 +5,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\FcUserModel;
-use app\model\AdminLogModel;
+use app\model\AdminLogOperationModel;
 use think\facade\Session;
 use think\facade\View;
 
@@ -53,7 +53,7 @@ class User extends BaseController
         $status = $status === 1 ? 1 : 0;
         $ret = FcUserModel::setStatus($id, $status);
         if ($ret) {
-            AdminLogModel::record([
+            AdminLogOperationModel::record([
                 'admin_id'    => (int) Session::get('admin_id', 0),
                 'admin_name'  => (string) Session::get('admin_name', ''),
                 'type_code'   => 'user_status',

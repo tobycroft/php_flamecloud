@@ -5,8 +5,8 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\AdminUserModel;
-use app\model\AdminLoginLogModel;
-use app\model\AdminLogModel;
+use app\model\AdminLogLoginModel;
+use app\model\AdminLogOperationModel;
 use app\model\SystemParamModel;
 use think\App;
 use think\facade\Session;
@@ -71,24 +71,24 @@ class Auth extends BaseController
 
         $admin = AdminUserModel::findByUsername($username);
         if (empty($admin)) {
-            AdminLoginLogModel::record(0, $username, $ip, $ua, false);
+            AdminLogLoginModel::record(0, $username, $ip, $ua, false);
             return json(['code' => 1, 'msg' => '用户不存在或已禁用']);
         }
 
         if ((int) $admin->status !== 1) {
-            AdminLoginLogModel::record((int) $admin->id, $username, $ip, $ua, false);
+            AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, false);
             return json(['code' => 1, 'msg' => '账号已禁用']);
         }
 
         if (md5($password) !== $admin->password) {
-            AdminLoginLogModel::record((int) $admin->id, $username, $ip, $ua, false);
+            AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, false);
             return json(['code' => 1, 'msg' => '密码错误']);
         }
 
         AdminUserModel::updateLastLogin((int) $admin->id, $ip);
-        AdminLoginLogModel::record((int) $admin->id, $username, $ip, $ua, true);
+        AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, true);
 
-        AdminLogModel::record([
+        AdminLogOperationModel::record([
             'admin_id'    => (int) $admin->id,
             'admin_name'  => (string) $admin->nickname ?: $admin->username,
             'type_code'   => 'admin_login',
@@ -118,7 +118,7 @@ class Auth extends BaseController
         $ua        = (string) $this->request->header('user-agent', '');
 
         if ($adminId > 0) {
-            AdminLogModel::record([
+            AdminLogOperationModel::record([
                 'admin_id'    => $adminId,
                 'admin_name'  => $adminName,
                 'type_code'   => 'admin_logout',

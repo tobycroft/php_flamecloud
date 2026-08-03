@@ -5,7 +5,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\AdminUserModel;
-use app\model\AdminLogModel;
+use app\model\AdminLogOperationModel;
 use think\facade\Session;
 use think\facade\View;
 
@@ -80,7 +80,7 @@ class Admin extends BaseController
             ]);
 
             if ($ret) {
-                AdminLogModel::record(array_merge($this->getLogMeta(), [
+                AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
                     'type_code'   => 'admin_add',
                     'action'      => '添加管理员',
                     'detail'      => '添加管理员 ' . $username . ($nickname ? ' (' . $nickname . ')' : ''),
@@ -132,7 +132,7 @@ class Admin extends BaseController
                     $detail .= ' 密码已重置';
                 }
                 $detail .= ' 状态=' . ($status === 1 ? '启用' : '禁用');
-                AdminLogModel::record(array_merge($this->getLogMeta(), [
+                AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
                     'type_code'   => 'admin_edit',
                     'action'      => '编辑管理员',
                     'detail'      => $detail,
@@ -180,7 +180,7 @@ class Admin extends BaseController
         $status = $status === 1 ? 1 : 0;
         $ret = AdminUserModel::setStatus($id, $status);
         if ($ret) {
-            AdminLogModel::record(array_merge($this->getLogMeta(), [
+            AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
                 'type_code'   => 'admin_status',
                 'action'      => '启用/禁用管理员',
                 'detail'      => ($status === 1 ? '启用' : '禁用') . '管理员 ID=' . $id,
@@ -209,7 +209,7 @@ class Admin extends BaseController
 
         $ret = AdminUserModel::remove($id);
         if ($ret) {
-            AdminLogModel::record(array_merge($this->getLogMeta(), [
+            AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
                 'type_code'   => 'admin_delete',
                 'action'      => '删除管理员',
                 'detail'      => '删除管理员 ID=' . $id,
