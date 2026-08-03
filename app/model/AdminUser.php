@@ -12,34 +12,22 @@ use think\facade\Db;
  */
 class AdminUser extends Model
 {
-    // 去掉前缀的表名（实际表名 = admin_user）
     protected $name = 'user';
 
-    // 自动时间戳（datetime 格式）
     protected $autoWriteTimestamp = 'datetime';
 
-    // 密码字段不在查询时自动输出由控制器控制
     protected $hidden = ['password'];
 
-    /**
-     * 根据用户名查询管理员
-     */
     public static function findByUsername(string $username)
     {
         return self::where('username', $username)->find();
     }
 
-    /**
-     * 根据 ID 查询
-     */
     public static function findById(int $id)
     {
         return self::find($id);
     }
 
-    /**
-     * 更新最后登录信息
-     */
     public static function updateLastLogin(int $id, string $ip): void
     {
         self::update([
@@ -47,5 +35,70 @@ class AdminUser extends Model
             'last_login_ip'   => $ip,
             'last_login_time' => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    public static function getList(int $page = 1, int $limit = 15, string $keyword = ''): array
+    {
+        $query = self::order('id', 'desc');
+        if ($keyword !== '') {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('username', 'like', '%' . $keyword . '%')
+                  ->whereOr('nickname', 'like', '%' . $keyword . '%');
+            });
+        }
+        $total = $query->count();
+        $list  = $query->page($page, $limit)->select()->toArray();
+        return ['total' => $total, 'list' => $list];
+    }
+
+    public static function add(array $data): bool
+    {
+        $admin = new self();
+        $admin->username = $data['username'];
+        $admin->password = md5($data['password']);
+        $admin->nickname = $data['nickname'] ?? '';
+        $admin->avatar   = $data['avatar'] ?? '';
+        $admin->status   = $data['status'] ?? 1;
+        return $admin->save();
+    }
+
+    public static function edit(int $id, array $data): bool
+    {
+        $admin = self::find($id);
+        if (empty($admin)) {
+            return false;
+        }
+        if (!empty($data['nickname'])) {
+            $admin->nickname = $data['nickname'];
+        }
+        if (isset($data['avatar'])) {
+            $admin->avatar = $data['avatar'];
+        }
+        if (isset($data['status'])) {
+            $admin->status = (int) $data['status'];
+        }
+        if (!empty($data['password'])) {
+            $admin->password = md5($data['password']);
+        }
+        return $admin->save();
+    }
+
+    public static function setStatus(int $id, int $status): bool
+    {
+        $admin = self::find($id);
+        if (empty($admin)) {
+            return false;
+        }
+        $admin->status = $status;
+        return $admin->save();
+    }
+
+    public static function remove(int $id): bool
+    {
+        $admin = self::find($id);
+        if (empty($admin)) {
+            return false;
+        }
+        return $admin->delete();
     }
 }
