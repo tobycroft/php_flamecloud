@@ -19,6 +19,6 @@ jobs:
           personal_token: ${{ secrets.GH_PAT }}
           external_repository: flamecloudcn/php_flamecloud_admin
           publish_dir: ./
-          publish_branch: main
+          publish_branch: master
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
