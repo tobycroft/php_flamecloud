@@ -20,10 +20,17 @@ jobs:
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
         
-    - name: Push to target repository
-      env:
-        GH_PAT: ${{ secrets.GH_PAT }}
+    - name: Setup SSH Key
       run: |
-        git remote add target https://x-access-token:${GH_PAT}@github.com/flamecloudcn/php_flamecloud_admin.git
-        git push target HEAD:main --force
-        echo "✅ Successfully pushed to flamecloudcn/php_flamecloud_admin"
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        
+    - name: Push to target repository using SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        git remote add target git@github.com:flamecloudcn/php_flamecloud_admin.git
+        GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" git push target HEAD:main --force
+        echo "✅ Successfully pushed to flamecloudcn/php_flamecloud_admin via SSH"
