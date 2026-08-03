@@ -56,7 +56,7 @@ class Auth extends BaseController
         $ident = (string) Session::get('admin_captcha_ident');
         Session::delete('admin_captcha_ident');
 
-        $ret = $this->captcha->check_in_time($ident, $code, 300);
+        $ret = $this->captcha->check($ident, $code);
         if (!$ret->isSuccess()) {
             return json(['code' => 1, 'msg' => '验证码错误']);
         }
