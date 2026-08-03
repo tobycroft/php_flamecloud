@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\FcUser;
+use app\model\AdminLog;
 use think\facade\Session;
 use think\facade\View;
 
@@ -52,6 +53,17 @@ class User extends BaseController
         $status = $status === 1 ? 1 : 0;
         $ret = FcUser::setStatus($id, $status);
         if ($ret) {
+            AdminLog::record([
+                'admin_id'    => (int) Session::get('admin_id', 0),
+                'admin_name'  => (string) Session::get('admin_name', ''),
+                'type_code'   => 'user_status',
+                'action'      => '启用/禁用用户',
+                'detail'      => ($status === 1 ? '启用' : '禁用') . '用户 ID=' . $id,
+                'target_type' => 'user',
+                'target_id'   => $id,
+                'ip'          => $this->request->ip(),
+                'user_agent'  => (string) $this->request->header('user-agent', ''),
+            ]);
             return json(['code' => 0, 'msg' => '操作成功']);
         }
         return json(['code' => 1, 'msg' => '操作失败']);

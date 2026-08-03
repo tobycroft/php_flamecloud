@@ -51,7 +51,7 @@ class AdminUser extends Model
         return ['total' => $total, 'list' => $list];
     }
 
-    public static function add(array $data): bool
+    public static function add(array $data): self|false
     {
         $admin = new self();
         $admin->username = $data['username'];
@@ -59,7 +59,7 @@ class AdminUser extends Model
         $admin->nickname = $data['nickname'] ?? '';
         $admin->avatar   = $data['avatar'] ?? '';
         $admin->status   = $data['status'] ?? 1;
-        return $admin->save();
+        return $admin->save() ? $admin : false;
     }
 
     public static function edit(int $id, array $data): bool

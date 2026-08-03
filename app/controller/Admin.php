@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\AdminUser;
+use app\model\AdminLog;
 use think\facade\Session;
 use think\facade\View;
 
@@ -14,6 +15,16 @@ use think\facade\View;
 class Admin extends BaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
+
+    private function getLogMeta(): array
+    {
+        return [
+            'admin_id'   => (int) Session::get('admin_id', 0),
+            'admin_name' => (string) Session::get('admin_name', ''),
+            'ip'         => $this->request->ip(),
+            'user_agent' => (string) $this->request->header('user-agent', ''),
+        ];
+    }
 
     public function index()
     {
@@ -69,6 +80,13 @@ class Admin extends BaseController
             ]);
 
             if ($ret) {
+                AdminLog::record(array_merge($this->getLogMeta(), [
+                    'type_code'   => 'admin_add',
+                    'action'      => '添加管理员',
+                    'detail'      => '添加管理员 ' . $username . ($nickname ? ' (' . $nickname . ')' : ''),
+                    'target_type' => 'admin',
+                    'target_id'   => (int) $ret->id,
+                ]));
                 return json(['code' => 0, 'msg' => '添加成功']);
             }
             return json(['code' => 1, 'msg' => '添加失败']);
@@ -106,6 +124,21 @@ class Admin extends BaseController
 
             $ret = AdminUser::edit($id, $data);
             if ($ret) {
+                $detail = '修改管理员 ' . $id;
+                if ($nickname !== '') {
+                    $detail .= ' 昵称=' . $nickname;
+                }
+                if ($password !== '') {
+                    $detail .= ' 密码已重置';
+                }
+                $detail .= ' 状态=' . ($status === 1 ? '启用' : '禁用');
+                AdminLog::record(array_merge($this->getLogMeta(), [
+                    'type_code'   => 'admin_edit',
+                    'action'      => '编辑管理员',
+                    'detail'      => $detail,
+                    'target_type' => 'admin',
+                    'target_id'   => $id,
+                ]));
                 return json(['code' => 0, 'msg' => '修改成功']);
             }
             return json(['code' => 1, 'msg' => '修改失败']);
@@ -147,6 +180,13 @@ class Admin extends BaseController
         $status = $status === 1 ? 1 : 0;
         $ret = AdminUser::setStatus($id, $status);
         if ($ret) {
+            AdminLog::record(array_merge($this->getLogMeta(), [
+                'type_code'   => 'admin_status',
+                'action'      => '启用/禁用管理员',
+                'detail'      => ($status === 1 ? '启用' : '禁用') . '管理员 ID=' . $id,
+                'target_type' => 'admin',
+                'target_id'   => $id,
+            ]));
             return json(['code' => 0, 'msg' => '操作成功']);
         }
         return json(['code' => 1, 'msg' => '操作失败']);
@@ -169,6 +209,13 @@ class Admin extends BaseController
 
         $ret = AdminUser::remove($id);
         if ($ret) {
+            AdminLog::record(array_merge($this->getLogMeta(), [
+                'type_code'   => 'admin_delete',
+                'action'      => '删除管理员',
+                'detail'      => '删除管理员 ID=' . $id,
+                'target_type' => 'admin',
+                'target_id'   => $id,
+            ]));
             return json(['code' => 0, 'msg' => '删除成功']);
         }
         return json(['code' => 1, 'msg' => '删除失败']);
