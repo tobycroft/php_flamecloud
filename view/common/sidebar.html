@@ -1,0 +1,27 @@
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
+
+<aside id="sidebar" class="fixed top-0 left-0 z-40 h-full w-60 bg-white border-r border-gray-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">
+    <div class="h-16 flex items-center gap-3 px-5 border-b border-gray-100 shrink-0">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 text-white flex items-center justify-center font-bold text-sm">焰</div>
+        <span class="font-semibold text-base">火焰云后台</span>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto sidebar-scroll py-3 px-3">
+        <div id="menuContainer"></div>
+    </nav>
+
+    <div class="border-t border-gray-100 px-4 py-3 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold text-sm">
+                {:mb_substr((string)$admin_name, 0, 1)}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="text-sm font-medium truncate">{$admin_name}</div>
+                <div class="text-xs text-gray-400 truncate">@{$admin_username}</div>
+            </div>
+            <a href="{:url('auth/logout')}" class="text-gray-400 hover:text-red-500 transition-colors" title="退出登录">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 16l-4-4m0 0l4-4m-4 4h14"/></svg>
+            </a>
+        </div>
+    </div>
+</aside>

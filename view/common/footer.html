@@ -1,0 +1,114 @@
+<div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden">
+    <div id="toastBox" class="px-5 py-3 rounded-lg shadow-lg text-sm font-medium"></div>
+</div>
+
+<script>
+const menus = [
+    {
+        title: '首页',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>',
+        url: '/',
+        children: []
+    },
+    {
+        title: '用户管理',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1a4 4 0 10-4-4 4 4 0 004 4z"/></svg>',
+        children: [
+            { title: '用户列表', url: '{:url("user/index")}' },
+            { title: '用户审核', url: '#' }
+        ]
+    },
+    {
+        title: '财务管理',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>',
+        children: [
+            { title: '充值审核', url: '#' },
+            { title: '交易流水', url: '#' }
+        ]
+    },
+    {
+        title: '工单系统',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h4m0 0l-3-3m3 3l-3 3M5 7a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
+        children: [
+            { title: '工单列表', url: '#' }
+        ]
+    },
+    {
+        title: '系统设置',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.572c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+        children: [
+            { title: '参数配置', url: '#' },
+            { title: '管理员管理', url: '{:url("admin/index")}' }
+        ]
+    }
+];
+
+const expandedKey = 'sidebar_expanded';
+let expanded = JSON.parse(localStorage.getItem(expandedKey) || '[]');
+
+function saveExpanded() { localStorage.setItem(expandedKey, JSON.stringify(expanded)); }
+function isExpanded(title) { return expanded.indexOf(title) !== -1; }
+function toggleMenu(title) {
+    const idx = expanded.indexOf(title);
+    idx !== -1 ? expanded.splice(idx, 1) : expanded.push(title);
+    saveExpanded(); renderMenu();
+}
+function isActive(url) { if (url === '#') return false; return window.location.pathname === url; }
+function isParentActive(children) { return children.some(function(c) { return isActive(c.url); }); }
+function updatePageTitle(title) { document.getElementById('pageTitle').textContent = title; }
+
+function renderMenu() {
+    var container = document.getElementById('menuContainer');
+    var html = '';
+    menus.forEach(function(menu) {
+        if (menu.children.length === 0) {
+            var active = isActive(menu.url);
+            html += '<a href="' + menu.url + '" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm transition-colors ' +
+                (active ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">' +
+                menu.icon + '<span>' + menu.title + '</span></a>';
+            if (active) updatePageTitle(menu.title);
+        } else {
+            var open = isExpanded(menu.title);
+            var parentActive = isParentActive(menu.children);
+            html += '<div class="mb-0.5">';
+            html += '<div onclick="toggleMenu(\'' + menu.title + '\')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ' +
+                (parentActive ? 'text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">';
+            html += menu.icon + '<span class="flex-1">' + menu.title + '</span>';
+            html += '<svg class="w-4 h-4 transition-transform duration-150 ' + (open ? 'rotate-90' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+            html += '</div>';
+            html += '<div class="overflow-hidden transition-all duration-200 ' + (open ? 'max-h-96' : 'max-h-0') + '">';
+            html += '<div class="ml-8 mt-0.5 mb-1 space-y-0.5">';
+            menu.children.forEach(function(child) {
+                var childActive = isActive(child.url);
+                html += '<a href="' + child.url + '" class="block px-3 py-2 rounded-lg text-sm transition-colors ' +
+                    (childActive ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50') + '">' +
+                    child.title + '</a>';
+                if (childActive) updatePageTitle(child.title);
+            });
+            html += '</div></div></div>';
+        }
+    });
+    container.innerHTML = html;
+}
+
+function toggleSidebar() {
+    var sidebar = document.getElementById('sidebar'), overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.add('-translate-x-full');
+    document.getElementById('sidebarOverlay').classList.add('hidden');
+}
+
+function showToast(msg, type) {
+    var toast = document.getElementById('toast'), box = document.getElementById('toastBox');
+    var bg = type === 'error' ? 'bg-red-500 text-white' : 'bg-gray-900 text-white';
+    box.className = 'px-5 py-3 rounded-lg shadow-lg text-sm font-medium ' + bg;
+    box.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(function() { toast.classList.add('hidden'); }, 2000);
+}
+
+renderMenu();
+</script>
