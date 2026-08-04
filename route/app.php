@@ -61,6 +61,10 @@ Route::group(function () {
     Route::get('user_balance', 'user_balance/index');
     Route::get('user_balance/index', 'user_balance/index');
 
+    // 交易流水
+    Route::get('balance_record', 'balance_record/index');
+    Route::get('balance_record/index', 'balance_record/index');
+
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');
 });
