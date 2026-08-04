@@ -112,18 +112,17 @@
         </div>
 
         <!-- 回复盖楼 -->
-        {foreach $replies as $reply}
-        {assign name="isAdmin" value="(int)$reply['is_admin'] === 1" /}
-        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-3 {$isAdmin ? 'border-l-4 border-l-orange-400' : 'border-l-4 border-l-blue-400'}">
+        {volist name="replies" id="reply"}
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-3 {$reply['is_admin'] == 1 ? 'border-l-4 border-l-orange-400' : 'border-l-4 border-l-blue-400'}">
             <div class="px-6 py-3 border-b border-gray-50 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full {$isAdmin ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center font-semibold text-sm">
-                        {$isAdmin ? '客' : mb_substr((string)($ticket['user_username'] ?: '?'), 0, 1)}
+                    <div class="w-8 h-8 rounded-full {$reply['is_admin'] == 1 ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center font-semibold text-sm">
+                        {$reply['is_admin'] == 1 ? '客' : mb_substr((string)($ticket['user_username'] ?: '?'), 0, 1)}
                     </div>
                     <div>
                         <div class="font-medium text-sm text-gray-900">
-                            {$isAdmin ? '客服' : ($ticket['user_username'] ?: '用户' . $reply['uid'])}
-                            {if $isAdmin}
+                            {$reply['is_admin'] == 1 ? '客服' : ($ticket['user_username'] ?: '用户' . $reply['uid'])}
+                            {if $reply['is_admin'] == 1}
                             <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-orange-50 text-orange-600">官方</span>
                             {/if}
                         </div>
@@ -135,7 +134,7 @@
                 <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">{:htmlspecialchars((string)$reply['content'])}</div>
             </div>
         </div>
-        {/foreach}
+        {/volist}
 
         <!-- 回复表单 -->
         {if (int)$ticket['status'] !== 3}
