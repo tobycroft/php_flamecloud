@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 工单列表</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">工单列表</h1>
+        <?php if ($pending_reply > 0): ?>
+        <span class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></span><?=$pending_reply?> 待回复
+        </span>
+        <?php endif; ?>
+    </header>
+
+    <main class="flex-1 p-6">
+        <!-- 状态 Tab -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-5 pt-4 border-b border-gray-100">
+                <div class="flex flex-wrap gap-1">
+                    <a href="{:url('ticket/index')}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors <?=$status === '' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'?>">全部（<?=$total?>）</a>
+                    <a href="{:url('ticket/index', ['status' => 0])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors <?=$status === '0' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'?>">待回复（<?=$status_cnt[0]?>）</a>
+                    <a href="{:url('ticket/index', ['status' => 1])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors <?=$status === '1' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'?>">
+                        客户发送（<?=$status_cnt[1]?>）
+                        <?php if ($status_cnt[1] > 0): ?>
+                        <span class="ml-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+                        <?php endif; ?>
+                    </a>
+                    <a href="{:url('ticket/index', ['status' => 2])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors <?=$status === '2' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'?>">客服答复（<?=$status_cnt[2]?>）</a>
+                    <a href="{:url('ticket/index', ['status' => 3])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors <?=$status === '3' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'?>">结案关闭（<?=$status_cnt[3]?>）</a>
+                </div>
+            </div>
+
+            <!-- 搜索 & 筛选 -->
+            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
+                <form method="get" action="{:url('ticket/index')}" class="flex items-center gap-2 flex-wrap">
+                    <select name="status" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部状态</option>
+                        <?php foreach ($status_map as $k => $v): ?>
+                        <option value="<?=$k?>" <?=$status === (string)$k ? 'selected' : ''?>><?=$v['text']?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <select name="category" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部分类</option>
+                        <?php foreach ($category_map as $k => $v): ?>
+                        <option value="<?=$k?>" <?=$category === $k ? 'selected' : ''?>><?=$v?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <select name="urgency" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部紧急性</option>
+                        <?php foreach ($urgency_map as $k => $v): ?>
+                        <option value="<?=$k?>" <?=$urgency === $k ? 'selected' : ''?>><?=$v?></option>
+                        <?php endforeach; ?>
+                    </select>
+
+                    <input type="date" name="date_start" value="<?=$date_start?>" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" placeholder="开始日期" />
+                    <span class="text-gray-400 text-sm">至</span>
+                    <input type="date" name="date_end" value="<?=$date_end?>" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" placeholder="结束日期" />
+
+                    <input type="text" name="keyword" value="<?=$keyword?>" placeholder="搜索工单ID/描述/手机号" class="px-4 py-2 w-56 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                    <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
+                    <?php if ($keyword !== '' || $status !== '' || $category !== '' || $urgency !== '' || $date_start !== '' || $date_end !== ''): ?>
+                    <a href="{:url('ticket/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
+                    <?php endif; ?>
+                </form>
+                <div class="text-sm text-gray-500">
+                    共 <span class="font-semibold text-gray-900"><?=$total?></span> 条
+                </div>
+            </div>
+
+            <!-- 列表 -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">ID</th>
+                            <th class="px-5 py-3 text-left font-medium">用户</th>
+                            <th class="px-5 py-3 text-left font-medium">问题描述</th>
+                            <th class="px-5 py-3 text-left font-medium">分类</th>
+                            <th class="px-5 py-3 text-left font-medium">紧急性</th>
+                            <th class="px-5 py-3 text-left font-medium">状态</th>
+                            <th class="px-5 py-3 text-left font-medium">创建时间</th>
+                            <th class="px-5 py-3 text-right font-medium">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <?php if (empty($list)): ?>
+                        <tr>
+                            <td colspan="8" class="px-5 py-16 text-center text-gray-400">暂无工单数据</td>
+                        </tr>
+                        <?php else: ?>
+                        <?php foreach ($list as $item): ?>
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-5 py-3.5 text-gray-500">#<?=$item['id']?></td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex flex-col">
+                                    <span class="font-medium text-gray-700"><?=$item['user_username'] ?: '-'?></span>
+                                    <span class="text-xs text-gray-400 font-mono"><?=$item['user_phone'] ?: ''?></span>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 max-w-sm">
+                                <div class="text-gray-700 truncate"><?=htmlspecialchars((string)$item['description'])?></div>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-600">
+                                    <?=$category_map[$item['category']] ?? $item['category']?>
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <span class="text-xs <?=$item['urgency'] === 'fault' ? 'text-red-600' : ($item['urgency'] === 'usage' ? 'text-orange-600' : 'text-gray-500')?>">
+                                    <?=$urgency_map[$item['urgency']] ?? $item['urgency']?>
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <?php $st = $status_map[(int)$item['status']] ?? null; ?>
+                                <?php if ($st): ?>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs <?=$st['color']?>">
+                                    <span class="w-1.5 h-1.5 rounded-full <?=(int)$item['status'] === 1 ? 'bg-red-500' : ((int)$item['status'] === 0 ? 'bg-yellow-500' : ((int)$item['status'] === 2 ? 'bg-orange-500' : 'bg-gray-400'))?>"></span>
+                                    <?=$st['text']?>
+                                </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs"><?=$item['created_at']?></td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center justify-end gap-1">
+                                    <a href="{:url('ticket/detail', ['id' => $item['id']])}" class="px-3 py-1.5 text-orange-600 hover:bg-orange-50 rounded-md text-xs transition-colors">查看详情</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <?php if ($totalPage > 1): ?>
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+                <div class="text-sm text-gray-500">共 <?=$total?> 条，第 <?=$page?> / <?=$totalPage?> 页</div>
+                <div class="flex items-center gap-1">
+                    <?php
+                        $params = [];
+                        if ($keyword !== '') $params[] = 'keyword=' . urlencode($keyword);
+                        if ($status !== '') $params[] = 'status=' . urlencode($status);
+                        if ($category !== '') $params[] = 'category=' . urlencode($category);
+                        if ($urgency !== '') $params[] = 'urgency=' . urlencode($urgency);
+                        if ($date_start !== '') $params[] = 'date_start=' . urlencode($date_start);
+                        if ($date_end !== '') $params[] = 'date_end=' . urlencode($date_end);
+                        $query = !empty($params) ? '?' . implode('&', $params) . '&' : '?';
+                    ?>
+                    <?php if ($page > 1): ?>
+                    <a href="<?=$query?>page=<?=$page-1?>" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">上一页</a>
+                    <?php endif; ?>
+                    <?php
+                        $start = max(1, $page - 2);
+                        $end   = min($totalPage, $page + 2);
+                        for ($i = $start; $i <= $end; $i++):
+                    ?>
+                    <a href="<?=$query?>page=<?=$i?>" class="px-3 py-1.5 border rounded-md text-sm transition-colors <?=$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'?>"><?=$i?></a>
+                    <?php endfor; ?>
+                    <?php if ($page < $totalPage): ?>
+                    <a href="<?=$query?>page=<?=$page+1?>" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">下一页</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </main>
+</div>
+
+{include file="common/footer" /}
+
+</body>
+</html>

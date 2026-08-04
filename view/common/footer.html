@@ -29,7 +29,7 @@ const menus = [
         title: '工单系统',
         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h4m0 0l-3-3m3 3l-3 3M5 7a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
         children: [
-            { title: '工单列表', url: '#' }
+            { title: '工单列表', url: '{:url("ticket/index")}' }
         ]
     },
     {
@@ -58,6 +58,22 @@ function isActive(url) { if (url === '#') return false; return window.location.p
 function isParentActive(children) { return children.some(function(c) { return isActive(c.url); }); }
 function updatePageTitle(title) { document.getElementById('pageTitle').textContent = title; }
 
+// 工单红点提醒：轮询待回复工单数
+function fetchTicketPending() {
+    fetch('{:url("ticket/pending_count")}')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0 && res.count > 0) {
+                var badge = document.getElementById('ticketBadge');
+                if (badge) {
+                    badge.textContent = res.count > 99 ? '99+' : res.count;
+                    badge.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(function() {});
+}
+
 function renderMenu() {
     var container = document.getElementById('menuContainer');
     var html = '';
@@ -75,6 +91,10 @@ function renderMenu() {
             html += '<div onclick="toggleMenu(\'' + menu.title + '\')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ' +
                 (parentActive ? 'text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">';
             html += menu.icon + '<span class="flex-1">' + menu.title + '</span>';
+            // 工单系统菜单添加红点徽章容器
+            if (menu.title === '工单系统') {
+                html += '<span id="ticketBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
+            }
             html += '<svg class="w-4 h-4 transition-transform duration-150 ' + (open ? 'rotate-90' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
             html += '</div>';
             html += '<div class="overflow-hidden transition-all duration-200 ' + (open ? 'max-h-96' : 'max-h-0') + '">';
@@ -112,4 +132,6 @@ function showToast(msg, type) {
 }
 
 renderMenu();
+fetchTicketPending();
+setInterval(fetchTicketPending, 60000);
 </script>

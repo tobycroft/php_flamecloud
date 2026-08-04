@@ -30,4 +30,12 @@ Route::group(function () {
     Route::get('system_param', 'systemParam/index');
     Route::get('system_param/index', 'systemParam/index');
     Route::post('system_param/save', 'systemParam/save');
+
+    // 工单管理
+    Route::get('ticket', 'ticket/index');
+    Route::get('ticket/index', 'ticket/index');
+    Route::get('ticket/detail', 'ticket/detail');
+    Route::post('ticket/reply', 'ticket/reply');
+    Route::post('ticket/close', 'ticket/close');
+    Route::get('ticket/pending_count', 'ticket/pending_count');
 });
