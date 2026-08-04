@@ -122,6 +122,7 @@
                     </div>
                     <div>
                         <div class="font-medium text-sm text-gray-900">
+                            <?=$isAdmin ? '客服' : ($ticket['user_username'] ?: '用户' . $reply['uid'])?>
                             <?php if ($isAdmin): ?>
                             <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-orange-50 text-orange-600">官方</span>
                             <?php endif; ?>
