@@ -136,6 +136,9 @@
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-end gap-1">
                                     <a href="{:url('ticket/detail', ['id' => $item['id']])}" class="px-3 py-1.5 text-orange-600 hover:bg-orange-50 rounded-md text-xs transition-colors">查看详情</a>
+                                    {if (int)$item['status'] === 3}
+                                    <a href="javascript:void(0)" onclick="reopenTicket({$item['id']})" class="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-md text-xs transition-colors">重启工单</a>
+                                    {/if}
                                 </div>
                             </td>
                         </tr>
@@ -167,6 +170,31 @@
 </div>
 
 {include file="common/footer" /}
+
+<script>
+function reopenTicket(id) {
+    if (!confirm('确定要重启该工单吗？工单将重新激活为待回复状态。')) return;
+    var form = new URLSearchParams();
+    form.append('id', id);
+    fetch('{:url("ticket/reopen")}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form.toString()
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (res) {
+        if (res.code === 0) {
+            alert(res.msg);
+            location.reload();
+        } else {
+            alert(res.msg);
+        }
+    })
+    .catch(function () {
+        alert('网络错误');
+    });
+}
+</script>
 
 </body>
 </html>

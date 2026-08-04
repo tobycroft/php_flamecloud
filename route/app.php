@@ -37,6 +37,7 @@ Route::group(function () {
     Route::get('ticket/detail', 'ticket/detail');
     Route::post('ticket/reply', 'ticket/reply');
     Route::post('ticket/close', 'ticket/close');
+    Route::post('ticket/reopen', 'ticket/reopen');
     Route::get('ticket/pending_count', 'ticket/pending_count');
 
     // 个人设置

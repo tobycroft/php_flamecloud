@@ -220,7 +220,38 @@ class Ticket extends BaseController
             'target_id'   => $id,
         ]));
 
-        return json(['code' => 0, 'msg' => '回复成功']);
+        return json(['code' => 0, 'msg' => '关闭成功']);
+    }
+
+    /**
+     * 重启工单（重新激活已关闭的工单）
+     */
+    public function reopen()
+    {
+        if (!$this->request->isPost()) {
+            return json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $id = (int) $this->request->post('id', 0);
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+
+        $ticket = FcTicketModel::findById($id);
+        if (empty($ticket)) {
+            return json(['code' => 1, 'msg' => '工单不存在']);
+        }
+
+        if ((int) $ticket['status'] !== 3) {
+            return json(['code' => 1, 'msg' => '只有已关闭的工单才能重启']);
+        }
+
+        $ret = FcTicketModel::updateStatus($id, 0);
+        if ($ret) {
+            AdminLogOperationModel::log($this->getLogMeta(), 'ticket_reopen', $id, '重启工单 #' . $id);
+            return json(['code' => 0, 'msg' => '工单已重启']);
+        }
+        return json(['code' => 1, 'msg' => '操作失败']);
     }
 
     /**
