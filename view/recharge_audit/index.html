@@ -142,7 +142,7 @@
                     <a href="{:url('recharge_audit/index')}{$p_query}page=1" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">首页</a>
                     <a href="{:url('recharge_audit/index')}{$p_query}page={$page - 1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">上一页</a>
                     {/if}
-                    {for $i = $p_start; $i <= $p_end; $i++}
+                    {for start="$p_start" end="$p_end" comparison="elt" name="i"}
                     <a href="{:url('recharge_audit/index')}{$p_query}page={$i}" class="px-3 py-1.5 text-sm {$i === $page ? 'bg-orange-500 text-white' : 'text-gray-600 border border-gray-300 hover:bg-gray-100'} rounded transition-colors">{$i}</a>
                     {/for}
                     {if $page < $totalPage}
