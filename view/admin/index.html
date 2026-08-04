@@ -26,9 +26,9 @@
                         <input type="text" name="keyword" value="{$keyword}" placeholder="搜索用户名/昵称"
                             class="px-4 py-2 w-56 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
                         <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
-                        <?php if ($keyword !== ''): ?>
+                        {if $keyword !== ''}
                         <a href="{:url('admin/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
-                        <?php endif; ?>
+                        {/if}
                     </form>
                 </div>
                 <button onclick="openAddModal()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-orange-500/30 transition-all">
@@ -51,12 +51,12 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        <?php if (empty($list)): ?>
+                        {if empty($list)}
                         <tr>
                             <td colspan="8" class="px-5 py-16 text-center text-gray-400">暂无数据</td>
                         </tr>
-                        <?php else: ?>
-                        <?php foreach ($list as $item): ?>
+                        {else /}
+                        {foreach $list as $item}
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-5 py-3.5 text-gray-500">#{$item.id}</td>
                             <td class="px-5 py-3.5">
@@ -69,15 +69,15 @@
                             </td>
                             <td class="px-5 py-3.5 text-gray-600">{$item.nickname ?: '-'}</td>
                             <td class="px-5 py-3.5">
-                                <?php if ((int)$item['status'] === 1): ?>
+                                {if (int)$item['status'] === 1}
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-600">
                                     <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>启用
                                 </span>
-                                <?php else: ?>
+                                {else /}
                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-500">
                                     <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>禁用
                                 </span>
-                                <?php endif; ?>
+                                {/if}
                             </td>
                             <td class="px-5 py-3.5 text-gray-500 font-mono text-xs">{$item.last_login_ip ?: '-'}</td>
                             <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.last_login_time ?: '-'}</td>
@@ -85,44 +85,44 @@
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-end gap-1">
                                     <button onclick="openEditModal({$item.id})" class="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-md text-xs transition-colors">编辑</button>
-                                    <?php if ((int)$item['id'] !== (int)$current_admin_id): ?>
-                                    <button onclick="toggleStatus({$item.id}, <?=(int)$item['status'] === 1 ? 0 : 1?>)" class="px-3 py-1.5 <?=(int)$item['status'] === 1 ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'?> rounded-md text-xs transition-colors">
-                                        <?=(int)$item['status'] === 1 ? '禁用' : '启用'?>
+                                    {if (int)$item['id'] !== (int)$current_admin_id}
+                                    <button onclick="toggleStatus({$item.id}, {$item['status'] == 1 ? 0 : 1})" class="px-3 py-1.5 {$item['status'] == 1 ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'} rounded-md text-xs transition-colors">
+                                        {$item['status'] == 1 ? '禁用' : '启用'}
                                     </button>
                                     <button onclick="confirmDelete({$item.id})" class="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-md text-xs transition-colors">删除</button>
-                                    <?php endif; ?>
+                                    {/if}
                                 </div>
                             </td>
                         </tr>
-                        <?php endforeach; ?>
-                        <?php endif; ?>
+                        {/foreach}
+                        {/if}
                     </tbody>
                 </table>
             </div>
 
-            <?php if ($totalPage > 1): ?>
+            {if $totalPage > 1}
             <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
                 <div class="text-sm text-gray-500">共 {$total} 条，第 {$page} / {$totalPage} 页</div>
                 <div class="flex items-center gap-1">
-                    <?php
+                    {php}
                         $query = $keyword !== '' ? '?keyword=' . urlencode($keyword) . '&' : '?';
-                        if ($page > 1):
-                    ?>
-                    <a href="{$query}page=<?=$page-1?>" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">上一页</a>
-                    <?php endif; ?>
-                    <?php
+                    {/php}
+                    {if $page > 1}
+                    <a href="{$query}page={$page-1}" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">上一页</a>
+                    {/if}
+                    {php}
                         $start = max(1, $page - 2);
                         $end   = min($totalPage, $page + 2);
                         for ($i = $start; $i <= $end; $i++):
-                    ?>
-                    <a href="{$query}page=<?=$i?>" class="px-3 py-1.5 border rounded-md text-sm transition-colors <?=$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'?>"><?=$i?></a>
-                    <?php endfor; ?>
-                    <?php if ($page < $totalPage): ?>
-                    <a href="{$query}page=<?=$page+1?>" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">下一页</a>
-                    <?php endif; ?>
+                    {/php}
+                    <a href="{$query}page={$i}" class="px-3 py-1.5 border rounded-md text-sm transition-colors {$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}">{$i}</a>
+                    {php} endfor; {/php}
+                    {if $page < $totalPage}
+                    <a href="{$query}page={$page+1}" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">下一页</a>
+                    {/if}
                 </div>
             </div>
-            <?php endif; ?>
+            {/if}
         </div>
     </main>
 </div>

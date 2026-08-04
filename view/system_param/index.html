@@ -32,12 +32,12 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        <?php if (empty($list)): ?>
+                        {if empty($list)}
                         <tr>
                             <td colspan="5" class="px-5 py-16 text-center text-gray-400">暂无参数</td>
                         </tr>
-                        <?php else: ?>
-                        <?php foreach ($list as $item): ?>
+                        {else /}
+                        {foreach $list as $item}
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-5 py-3.5 text-gray-500">#{$item.id}</td>
                             <td class="px-5 py-3.5">
@@ -53,8 +53,8 @@
                                     class="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-medium transition-colors">保存</button>
                             </td>
                         </tr>
-                        <?php endforeach; ?>
-                        <?php endif; ?>
+                        {/foreach}
+                        {/if}
                     </tbody>
                 </table>
             </div>
