@@ -22,4 +22,6 @@ return [
     'taglib_begin'  => '{',
     // 标签库标签结束标记
     'taglib_end'    => '}',
+    // 关闭模板编译缓存（开发环境）
+    'compile_cache' => false,
 ];
