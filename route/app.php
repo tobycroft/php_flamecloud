@@ -49,6 +49,13 @@ Route::group(function () {
     Route::get('upload/token', 'upload/token');
     Route::post('upload/resolve', 'upload/resolve');
 
+    // 充值审核
+    Route::get('recharge_audit', 'recharge_audit/index');
+    Route::get('recharge_audit/index', 'recharge_audit/index');
+    Route::get('recharge_audit/detail', 'recharge_audit/detail');
+    Route::post('recharge_audit/approve', 'recharge_audit/approve');
+    Route::post('recharge_audit/reject', 'recharge_audit/reject');
+
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');
 });

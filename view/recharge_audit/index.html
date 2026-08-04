@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 充值审核</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">充值审核</h1>
+        {if $pending_audit > 0}
+        <span class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></span>{$pending_audit} 待审核
+        </span>
+        {/if}
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <!-- 状态 Tab -->
+            <div class="px-5 pt-4 border-b border-gray-100">
+                <div class="flex flex-wrap gap-1">
+                    <a href="{:url('recharge_audit/index')}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">全部（{$total}）</a>
+                    <a href="{:url('recharge_audit/index', ['status' => 3])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '3' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">
+                        审核中（{$status_cnt[3] ?? 0}）
+                        {if $status_cnt[3] > 0}
+                        <span class="ml-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+                        {/if}
+                    </a>
+                    <a href="{:url('recharge_audit/index', ['status' => 1])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '1' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">已完成（{$status_cnt[1] ?? 0}）</a>
+                    <a href="{:url('recharge_audit/index', ['status' => 0])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '0' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">待支付（{$status_cnt[0] ?? 0}）</a>
+                    <a href="{:url('recharge_audit/index', ['status' => 4])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '4' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">已失败（{$status_cnt[4] ?? 0}）</a>
+                </div>
+            </div>
+
+            <!-- 搜索 & 筛选 -->
+            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
+                <form method="get" action="{:url('recharge_audit/index')}" class="flex items-center gap-2 flex-wrap">
+                    <select name="status" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部状态</option>
+                        {foreach $status_map as $k => $v}
+                        <option value="{$k}" {$status === (string)$k ? 'selected' : ''}>{$v['text']}</option>
+                        {/foreach}
+                    </select>
+
+                    <select name="type" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部类型</option>
+                        {foreach $type_map as $k => $v}
+                        <option value="{$k}" {$type === (string)$k ? 'selected' : ''}>{$v}</option>
+                        {/foreach}
+                    </select>
+
+                    <input type="text" name="keyword" value="{$keyword}" placeholder="订单号/UID/流水号" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm w-48" />
+
+                    <input type="date" name="date_start" value="{$date_start}" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+
+                    <span class="text-gray-400 text-sm">至</span>
+
+                    <input type="date" name="date_end" value="{$date_end}" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+
+                    <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">搜索</button>
+                </form>
+            </div>
+
+            <!-- 表格 -->
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 bg-gray-50">
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">订单号</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">UID</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">金额</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">类型</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">支付方式</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">创建时间</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {if empty($list)}
+                    <tr>
+                        <td colspan="8" class="px-4 py-12 text-center text-gray-400">
+                            <svg class="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+                            <p>暂无充值订单</p>
+                        </td>
+                    </tr>
+                    {else /}
+                    {foreach $list as $order}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3">
+                            <div class="text-sm font-medium text-gray-900 font-mono">{:htmlspecialchars((string)$order['order_no'])}</div>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-sm text-gray-600">{$order['uid']}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-sm font-bold text-orange-600">¥{$order['amount']}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs text-gray-500">{$type_map[$order['type']] ?? '未知'}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs text-gray-500">{$pay_method_map[$order['pay_method']] ?? $order['pay_method']}</span>
+                        </td>
+                        <td class="px-4 py-3">
+                            {php}$st = $order['status'];{/php}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded {$status_map[$st]['color'] ?? 'bg-gray-100 text-gray-500'}">
+                                <span class="w-1.5 h-1.5 rounded-full {if $st === 1}bg-green-500{elseif $st === 0}bg-yellow-500{elseif $st === 3}bg-blue-500{else}bg-gray-400{/if}"></span>
+                                {$status_map[$st]['text'] ?? '未知'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-gray-500">{$order['created_at']}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex items-center justify-end gap-2">
+                                {if $order['status'] === 3}
+                                <a href="{:url('recharge_audit/detail', ['id' => $order['id']])}" class="px-3 py-1.5 text-xs font-medium text-white bg-orange-500 hover:bg-orange-600 rounded transition-colors">去审核</a>
+                                {else /}
+                                <a href="{:url('recharge_audit/detail', ['id' => $order['id']])}" class="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 hover:bg-gray-50 rounded transition-colors">详情</a>
+                                {/if}
+                            </div>
+                        </td>
+                    </tr>
+                    {/foreach}
+                    {/if}
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            {if $totalPage > 1}
+            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="text-sm text-gray-500">共 <span class="font-medium text-gray-700">{$total}</span> 条记录</div>
+                <div class="flex items-center gap-2">
+                    {if $page > 1}
+                    <a href="{:url('recharge_audit/index')}{$p_query}page=1" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">首页</a>
+                    <a href="{:url('recharge_audit/index')}{$p_query}page={$page - 1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">上一页</a>
+                    {/if}
+                    {for $i = $p_start; $i <= $p_end; $i++}
+                    <a href="{:url('recharge_audit/index')}{$p_query}page={$i}" class="px-3 py-1.5 text-sm {$i === $page ? 'bg-orange-500 text-white' : 'text-gray-600 border border-gray-300 hover:bg-gray-100'} rounded transition-colors">{$i}</a>
+                    {/for}
+                    {if $page < $totalPage}
+                    <a href="{:url('recharge_audit/index')}{$p_query}page={$page + 1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">下一页</a>
+                    <a href="{:url('recharge_audit/index')}{$p_query}page={$totalPage}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">末页</a>
+                    {/if}
+                </div>
+            </div>
+            {/if}
+        </div>
+    </main>
+</div>
+
+{include file="common/footer" /}
+
+</body>
+</html>

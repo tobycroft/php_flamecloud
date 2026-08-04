@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 充值审核详情</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <a href="{:url('recharge_audit/index')}" class="flex items-center gap-1 text-gray-500 hover:text-gray-700 mr-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <h1 id="pageTitle" class="text-lg font-semibold">充值审核详情</h1>
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="max-w-3xl mx-auto space-y-6">
+            <!-- 订单信息 -->
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div class="font-medium text-sm text-gray-700">订单信息</div>
+                    {php}$st = $order['status'];{/php}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded {$status_map[$st]['color'] ?? 'bg-gray-100 text-gray-500'}">
+                        <span class="w-1.5 h-1.5 rounded-full {if $st === 1}bg-green-500{elseif $st === 0}bg-yellow-500{elseif $st === 3}bg-blue-500{else}bg-gray-400{/if}"></span>
+                        {$status_map[$st]['text'] ?? '未知'}
+                    </span>
+                </div>
+                <div class="px-6 py-4 space-y-3">
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">订单号</span>
+                        <span class="text-gray-900 font-mono font-medium">{:htmlspecialchars((string)$order['order_no'])}</span>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">UID</span>
+                        <span class="text-gray-900">{$order['uid']}</span>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">充值金额</span>
+                        <span class="text-lg font-bold text-orange-600">¥{$order['amount']}</span>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">充值类型</span>
+                        <span class="text-gray-900">{$type_map[$order['type']] ?? '未知'}</span>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">支付方式</span>
+                        <span class="text-gray-900">{$pay_method_map[$order['pay_method']] ?? $order['pay_method']}</span>
+                    </div>
+                    {if !empty($order['account_name'])}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">账户名称</span>
+                        <span class="text-gray-900">{:htmlspecialchars((string)$order['account_name'])}</span>
+                    </div>
+                    {/if}
+                    {if !empty($order['bank_account'])}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">银行账户</span>
+                        <span class="text-gray-900 font-mono">{:htmlspecialchars((string)$order['bank_account'])}</span>
+                    </div>
+                    {/if}
+                    {if !empty($order['bank_name'])}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">支付银行</span>
+                        <span class="text-gray-900">{:htmlspecialchars((string)$order['bank_name'])}</span>
+                    </div>
+                    {/if}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">交易流水号</span>
+                        <span class="text-gray-900 font-mono">{:htmlspecialchars((string)$order['transaction_id'])}</span>
+                    </div>
+                    {if !empty($order['remit_time'])}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">汇款时间</span>
+                        <span class="text-gray-900">{$order['remit_time']}</span>
+                    </div>
+                    {/if}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">创建时间</span>
+                        <span class="text-gray-900">{$order['created_at']}</span>
+                    </div>
+                    {if !empty($order['remark'])}
+                    <div class="flex items-start gap-2 text-sm">
+                        <span class="text-gray-400 w-20 flex-shrink-0">备注</span>
+                        <span class="text-gray-900 whitespace-pre-wrap">{:htmlspecialchars((string)$order['remark'])}</span>
+                    </div>
+                    {/if}
+                </div>
+            </div>
+
+            <!-- 凭证图片 -->
+            {if !empty($vouchers)}
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <div class="font-medium text-sm text-gray-700">收款凭证</div>
+                </div>
+                <div class="px-6 py-4">
+                    <div class="flex flex-wrap gap-3">
+                        {foreach $vouchers as $v}
+                        <a href="{$v['url']}" target="_blank" class="block w-24 h-24 border border-gray-200 rounded-lg overflow-hidden hover:ring-2 hover:ring-orange-500/30 transition-all">
+                            <img src="{$v['url']}" class="w-full h-full object-cover" alt="{$v['name']}" />
+                        </a>
+                        {/foreach}
+                    </div>
+                </div>
+            </div>
+            {/if}
+
+            <!-- 审核操作 -->
+            {if $order['status'] === 3}
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <div class="font-medium text-sm text-gray-700">审核操作</div>
+                </div>
+                <div class="px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <button onclick="approve()" id="approveBtn" class="px-6 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">
+                            审核通过
+                        </button>
+                        <button onclick="showReject()" class="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">
+                            拒绝
+                        </button>
+                    </div>
+                    <div id="rejectBox" class="mt-4 hidden">
+                        <textarea id="rejectReason" rows="2" placeholder="拒绝原因（选填）" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none text-sm resize-none"></textarea>
+                        <div class="mt-2 flex items-center gap-2">
+                            <button onclick="doReject()" id="rejectBtn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors">确认拒绝</button>
+                            <button onclick="cancelReject()" class="px-4 py-2 text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">取消</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/if}
+        </div>
+    </main>
+</div>
+
+{include file="common/footer" /}
+
+<script>
+function approve() {
+    if (!confirm('确定要审核通过此充值订单吗？通过后将自动充值到账。')) return;
+    var btn = document.getElementById('approveBtn');
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+
+    var body = new URLSearchParams();
+    body.append('id', {$order['id']});
+    fetch("{:url('recharge_audit/approve')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) setTimeout(function() { location.reload(); }, 600);
+    }).catch(function() {
+        showToast('网络错误', 'error');
+        btn.disabled = false;
+        btn.textContent = '审核通过';
+    });
+}
+
+function showReject() {
+    document.getElementById('rejectBox').classList.remove('hidden');
+}
+
+function cancelReject() {
+    document.getElementById('rejectBox').classList.add('hidden');
+    document.getElementById('rejectReason').value = '';
+}
+
+function doReject() {
+    if (!confirm('确定要拒绝此充值申请吗？')) return;
+    var btn = document.getElementById('rejectBtn');
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+
+    var reason = document.getElementById('rejectReason').value.trim();
+    var body = new URLSearchParams();
+    body.append('id', {$order['id']});
+    if (reason) body.append('reason', reason);
+    fetch("{:url('recharge_audit/reject')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) setTimeout(function() { location.reload(); }, 600);
+    }).catch(function() {
+        showToast('网络错误', 'error');
+        btn.disabled = false;
+        btn.textContent = '确认拒绝';
+    });
+}
+</script>
+
+</body>
+</html>
