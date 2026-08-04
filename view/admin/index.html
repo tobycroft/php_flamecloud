@@ -113,10 +113,10 @@
                     {php}
                         $start = max(1, $page - 2);
                         $end   = min($totalPage, $page + 2);
-                        for ($i = $start; $i <= $end; $i++):
                     {/php}
+                    {for start="$start" end="$end" comparison="elt" name="i"}
                     <a href="{$query}page={$i}" class="px-3 py-1.5 border rounded-md text-sm transition-colors {$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}">{$i}</a>
-                    {php} endfor; {/php}
+                    {/for}
                     {if $page < $totalPage}
                     <a href="{$query}page={$page+1}" class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-600 hover:bg-gray-50 transition-colors">下一页</a>
                     {/if}
