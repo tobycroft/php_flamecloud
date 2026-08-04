@@ -38,6 +38,7 @@ const menus = [
         children: [
             { title: '参数配置', url: '{:url("system_param/index")}' },
             { title: '管理员管理', url: '{:url("admin/index")}' },
+            { title: '个人设置', url: '{:url("admin_setting/index")}' },
             { title: '操作日志', url: '{:url("admin_log/index")}' },
             { title: '登录日志', url: '{:url("admin_log_login/index")}' }
         ]
@@ -134,4 +135,116 @@ function showToast(msg, type) {
 renderMenu();
 fetchTicketPending();
 setInterval(fetchTicketPending, 60000);
+
+// 空闲超时监控
+(function () {
+    var idleTimeoutMinutes = 30;
+    var lastActivity = Date.now();
+    var heartbeatInterval = 60000;
+    var checkInterval = 10000;
+    var warningShown = false;
+    var warningTimer = null;
+
+    // 用户活动事件
+    var activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    function resetActivity() {
+        lastActivity = Date.now();
+        if (warningShown) {
+            hideWarning();
+        }
+    }
+    activityEvents.forEach(function (evt) {
+        document.addEventListener(evt, resetActivity, { passive: true });
+    });
+
+    // 心跳：60秒一次，更新服务端 last_activity 并获取超时配置
+    function heartbeat() {
+        fetch('{:url("auth/heartbeat")}')
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (res.code === 401) {
+                    window.location.href = '{:url("auth/login")}';
+                    return;
+                }
+                if (res.code === 0 && res.data) {
+                    idleTimeoutMinutes = parseInt(res.data.idle_timeout) || 30;
+                }
+            })
+            .catch(function () {});
+    }
+
+    // 检查空闲状态
+    function checkIdle() {
+        var idleMs = Date.now() - lastActivity;
+        var idleSeconds = Math.floor(idleMs / 1000);
+        var timeoutSeconds = idleTimeoutMinutes * 60;
+
+        if (idleSeconds >= timeoutSeconds) {
+            window.location.href = '{:url("auth/logout")}';
+            return;
+        }
+
+        // 提前1分钟警告
+        var warnSeconds = timeoutSeconds - 60;
+        if (idleSeconds >= warnSeconds && !warningShown && timeoutSeconds > 120) {
+            showWarning(Math.ceil((timeoutSeconds - idleSeconds) / 60));
+        }
+    }
+
+    function showWarning(minutesLeft) {
+        warningShown = true;
+        var div = document.createElement('div');
+        div.id = 'idleWarning';
+        div.className = 'fixed bottom-6 right-6 z-50 bg-white rounded-xl shadow-2xl border border-orange-200 p-4 max-w-sm animate-pulse';
+        div.innerHTML = '<div class="flex items-start gap-3">' +
+            '<div class="w-10 h-10 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center flex-shrink-0">' +
+            '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+            '</div>' +
+            '<div>' +
+            '<div class="font-medium text-sm text-gray-900">即将自动退出</div>' +
+            '<div class="text-xs text-gray-500 mt-1">您已长时间未操作，<span id="warnCountdown">' + minutesLeft + '</span> 分钟后将自动退出登录</div>' +
+            '<button onclick="document.getElementById(\'idleWarning\').remove();" class="mt-2 text-xs text-orange-600 hover:text-orange-700 font-medium">我知道了</button>' +
+            '</div></div>';
+        document.body.appendChild(div);
+
+        // 倒计时
+        var countdown = minutesLeft * 60;
+        warningTimer = setInterval(function () {
+            countdown--;
+            var el = document.getElementById('warnCountdown');
+            if (el) {
+                if (countdown <= 60) {
+                    el.textContent = Math.ceil(countdown / 60);
+                }
+                if (countdown <= 0) {
+                    clearInterval(warningTimer);
+                    window.location.href = '{:url("auth/logout")}';
+                }
+            } else {
+                clearInterval(warningTimer);
+            }
+        }, 1000);
+    }
+
+    function hideWarning() {
+        warningShown = false;
+        if (warningTimer) {
+            clearInterval(warningTimer);
+            warningTimer = null;
+        }
+        var el = document.getElementById('idleWarning');
+        if (el) { el.remove(); }
+    }
+
+    // 监听来自个人设置页面的超时更新
+    window.addEventListener('message', function (e) {
+        if (e.data && e.data.type === 'idle_timeout_updated') {
+            idleTimeoutMinutes = parseInt(e.data.timeout) || 30;
+        }
+    });
+
+    heartbeat();
+    setInterval(heartbeat, heartbeatInterval);
+    setInterval(checkIdle, checkInterval);
+})();
 </script>

@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\BaseController;
 use app\model\AdminUserModel;
+use app\model\AdminUserSettingModel;
 use app\model\AdminLogLoginModel;
 use app\model\SystemParamModel;
 use think\App;
@@ -90,6 +91,7 @@ class Auth extends BaseController
         Session::set('admin_id', (int) $admin->id);
         Session::set('admin_name', (string) $admin->nickname ?: $admin->username);
         Session::set('admin_username', (string) $admin->username);
+        Session::set('last_activity', time());
 
         return json(['code' => 0, 'msg' => '登录成功', 'url' => (string) url('index/index')]);
     }
@@ -101,6 +103,30 @@ class Auth extends BaseController
     {
         Session::clear();
         return redirect((string) url('auth/login'));
+    }
+
+    /**
+     * 心跳保活
+     * 前端定时请求，更新 last_activity 并返回空闲超时配置
+     */
+    public function heartbeat()
+    {
+        $adminId = Session::get('admin_id');
+        if (empty($adminId)) {
+            return json(['code' => 401, 'msg' => '未登录']);
+        }
+
+        Session::set('last_activity', time());
+
+        $idleTimeout = AdminUserSettingModel::getIdleTimeout((int) $adminId);
+
+        return json([
+            'code' => 0,
+            'data' => [
+                'idle_timeout' => $idleTimeout,
+                'server_time'  => time(),
+            ],
+        ]);
     }
 
     /**

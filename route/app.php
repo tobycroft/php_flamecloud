@@ -38,4 +38,12 @@ Route::group(function () {
     Route::post('ticket/reply', 'ticket/reply');
     Route::post('ticket/close', 'ticket/close');
     Route::get('ticket/pending_count', 'ticket/pending_count');
+
+    // 个人设置
+    Route::get('admin_setting', 'adminSetting/index');
+    Route::get('admin_setting/index', 'adminSetting/index');
+    Route::post('admin_setting/save', 'adminSetting/save');
+
+    // 心跳保活
+    Route::get('heartbeat', 'auth/heartbeat');
 });
