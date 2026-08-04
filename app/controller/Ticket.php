@@ -143,8 +143,9 @@ class Ticket extends BaseController
             'status_map'   => self::STATUS_MAP,
             'urgency_map'  => self::URGENCY_MAP,
             'category_map' => self::CATEGORY_MAP,
-            'admin_name'   => Session::get('admin_name', '管理员'),
-            'admin_id'     => (int) Session::get('admin_id', 0),
+            'admin_name'     => Session::get('admin_name', '管理员'),
+            'admin_username' => Session::get('admin_username', ''),
+            'admin_id'       => (int) Session::get('admin_id', 0),
             'pending_reply'=> FcTicketModel::countPendingReply(),
         ]);
         return View::fetch('/ticket/detail');
