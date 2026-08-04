@@ -55,6 +55,11 @@ Route::group(function () {
     Route::get('recharge_audit/detail', 'recharge_audit/detail');
     Route::post('recharge_audit/approve', 'recharge_audit/approve');
     Route::post('recharge_audit/reject', 'recharge_audit/reject');
+    Route::get('recharge_audit/pending_count', 'recharge_audit/pending_count');
+
+    // 用户余额
+    Route::get('user_balance', 'user_balance/index');
+    Route::get('user_balance/index', 'user_balance/index');
 
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');

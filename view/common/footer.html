@@ -22,6 +22,7 @@ const menus = [
         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>',
         children: [
             { title: '充值审核', url: '{:url("recharge_audit/index")}' },
+            { title: '用户余额', url: '{:url("user_balance/index")}' },
             { title: '交易流水', url: '#' }
         ]
     },
@@ -96,6 +97,10 @@ function renderMenu() {
             if (menu.title === '工单系统') {
                 html += '<span id="ticketBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
             }
+            // 财务管理菜单添加充值审核角标
+            if (menu.title === '财务管理') {
+                html += '<span id="rechargeBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
+            }
             html += '<svg class="w-4 h-4 transition-transform duration-150 ' + (open ? 'rotate-90' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
             html += '</div>';
             html += '<div class="overflow-hidden transition-all duration-200 ' + (open ? 'max-h-96' : 'max-h-0') + '">';
@@ -135,6 +140,24 @@ function showToast(msg, type) {
 renderMenu();
 fetchTicketPending();
 setInterval(fetchTicketPending, 60000);
+
+// 充值审核红点提醒：轮询待审核数
+function fetchRechargePending() {
+    fetch('{:url("recharge_audit/pending_count")}')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0 && res.count > 0) {
+                var badge = document.getElementById('rechargeBadge');
+                if (badge) {
+                    badge.textContent = res.count > 99 ? '99+' : res.count;
+                    badge.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(function() {});
+}
+fetchRechargePending();
+setInterval(fetchRechargePending, 60000);
 
 // 空闲超时监控
 (function () {

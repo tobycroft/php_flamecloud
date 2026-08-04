@@ -50,4 +50,25 @@ class FcUserBalanceModel extends Model
         self::where('uid', $uid)->update(['balance' => $newBalance]);
         return $newBalance;
     }
+
+    /**
+     * 分页列表（支持 UID 搜索）
+     */
+    public static function getList(int $page = 1, int $limit = 15, string $keyword = ''): array
+    {
+        $query = self::order('uid', 'asc');
+
+        if ($keyword !== '') {
+            if (is_numeric($keyword)) {
+                $query->where('uid', (int) $keyword);
+            } else {
+                $query->where('uid', 'like', '%' . $keyword . '%');
+            }
+        }
+
+        $total = $query->count();
+        $list  = $query->page($page, $limit)->select()->toArray();
+
+        return ['list' => $list, 'total' => $total];
+    }
 }

@@ -246,4 +246,15 @@ class RechargeAudit extends BaseController
 
         return json(['code' => 0, 'msg' => '已拒绝该充值申请']);
     }
+
+    /**
+     * 待审核数量（供 sidebar 角标轮询）
+     */
+    public function pending_count()
+    {
+        return json([
+            'code'  => 0,
+            'count' => FcRechargeOrderModel::countByStatus(3),
+        ]);
+    }
 }
