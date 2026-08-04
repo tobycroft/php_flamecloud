@@ -148,12 +148,18 @@ class Ticket extends BaseController
         $links       = FcTicketLinkModel::listByTicketId($id);
         $contacts    = FcTicketContactModel::listByTicketId($id);
 
+        $replyAttachments = [];
+        foreach ($replies as $reply) {
+            $replyAttachments[(int)$reply['id']] = FcTicketAttachmentModel::listByReplyId((int)$reply['id']);
+        }
+
         View::assign([
-            'ticket'       => $ticket,
-            'replies'      => $replies,
-            'attachments'  => $attachments,
-            'links'        => $links,
-            'contacts'     => $contacts,
+            'ticket'            => $ticket,
+            'replies'           => $replies,
+            'attachments'       => $attachments,
+            'reply_attachments' => $replyAttachments,
+            'links'             => $links,
+            'contacts'          => $contacts,
             'status_map'   => self::STATUS_MAP,
             'urgency_map'  => self::URGENCY_MAP,
             'category_map' => self::CATEGORY_MAP,
@@ -202,6 +208,14 @@ class Ticket extends BaseController
         $replyId = FcTicketReplyModel::adminReply($id, $adminId, $content);
         if ($replyId <= 0) {
             return json(['code' => 1, 'msg' => '回复失败']);
+        }
+
+        $attachments = trim((string) $this->request->post('attachments', ''));
+        if ($attachments !== '') {
+            $files = json_decode($attachments, true);
+            if (is_array($files) && !empty($files)) {
+                FcTicketAttachmentModel::insertBatchReply($id, $replyId, (int) $ticket['uid'], $files);
+            }
         }
 
         // 工单状态置为"客服答复"(2)

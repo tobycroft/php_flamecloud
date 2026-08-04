@@ -74,10 +74,17 @@
                     <span class="text-gray-400 w-16 flex-shrink-0">附件</span>
                     <div class="flex flex-wrap gap-2">
                         {foreach $attachments as $att}
+                        {php}$isAttImg = preg_match('/\.(jpg|jpeg|gif|png|bmp|webp)$/i', (string)$att['name']);{/php}
+                        {if $isAttImg}
+                        <a href="{$att['url']}" target="_blank" class="block w-16 h-16 border border-gray-200 rounded overflow-hidden">
+                            <img src="{$att['url']}" class="w-full h-full object-cover" />
+                        </a>
+                        {else /}
                         <a href="{$att['url']}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-blue-600 hover:bg-blue-50">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
                             {:htmlspecialchars((string)$att['name'])}
                         </a>
+                        {/if}
                         {/foreach}
                     </div>
                 </div>
@@ -132,6 +139,24 @@
             </div>
             <div class="px-6 py-4">
                 <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">{:htmlspecialchars((string)$reply['content'])}</div>
+                {php}$replyAtts = $reply_attachments[(int)$reply['id']] ?? [];{/php}
+                {if !empty($replyAtts)}
+                <div class="mt-3 flex flex-wrap gap-2">
+                    {foreach $replyAtts as $ratt}
+                    {php}$isImg = preg_match('/\.(jpg|jpeg|gif|png|bmp|webp)$/i', (string)$ratt['name']);{/php}
+                    {if $isImg}
+                    <a href="{$ratt['url']}" target="_blank" class="block w-16 h-16 border border-gray-200 rounded overflow-hidden">
+                        <img src="{$ratt['url']}" class="w-full h-full object-cover" />
+                    </a>
+                    {else /}
+                    <a href="{$ratt['url']}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-gray-200 rounded text-xs text-blue-600 hover:bg-blue-50">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                        {:htmlspecialchars((string)$ratt['name'])}
+                    </a>
+                    {/if}
+                    {/foreach}
+                </div>
+                {/if}
             </div>
         </div>
         {/volist}
@@ -145,6 +170,15 @@
             </div>
             <div class="p-6">
                 <textarea id="replyContent" rows="4" placeholder="请输入回复内容..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm resize-none"></textarea>
+                <div class="mt-2 flex items-center gap-2">
+                    <input type="file" id="replyImageInput" accept="image/*" multiple style="display:none" onchange="uploadReplyImages(event)" />
+                    <button type="button" onclick="document.getElementById('replyImageInput').click()" class="px-3 py-1.5 text-xs text-gray-500 border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        上传图片
+                    </button>
+                    <span id="replyUploadStatus" class="text-xs text-gray-400 hidden"></span>
+                </div>
+                <div id="replyImagePreview" class="mt-2 flex flex-wrap gap-2"></div>
                 <div class="mt-3 flex items-center justify-between">
                     <button onclick="closeTicket()" class="px-4 py-2 text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">结案关闭</button>
                     <button onclick="submitReply()" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">发送回复</button>
@@ -165,12 +199,92 @@
 {include file="common/footer" /}
 
 <script>
+var replyUploadedFiles = [];
+
+function uploadReplyImages(e) {
+    var files = e.target.files;
+    if (!files || files.length === 0) return;
+    var statusEl = document.getElementById('replyUploadStatus');
+    var previewEl = document.getElementById('replyImagePreview');
+
+    for (var i = 0; i < files.length; i++) {
+        (function(file) {
+            if (file.size > 20 * 1024 * 1024) { showToast('单个图片不得超过20M', 'error'); return; }
+            if (replyUploadedFiles.length >= 5) { showToast('最多上传5张图片', 'error'); return; }
+            statusEl.classList.remove('hidden');
+            statusEl.textContent = '上传中...';
+
+            fetch('{:url("upload/token")}')
+                .then(function(r) { return r.json(); })
+                .then(function(tokenData) {
+                    if (tokenData.code !== 0) { showToast(tokenData.msg || '获取上传地址失败', 'error'); return; }
+                    var uploadUrl = tokenData.data.upload_url;
+                    var fd = new FormData();
+                    fd.append('file', file);
+                    return fetch(uploadUrl, { method: 'POST', body: fd });
+                })
+                .then(function(uploadRes) { return uploadRes ? uploadRes.json() : null; })
+                .then(function(uploadData) {
+                    if (!uploadData || uploadData.code !== 0) { showToast(uploadData ? uploadData.echo : '上传失败', 'error'); return; }
+                    var hash = uploadData.data.hash || uploadData.data;
+                    var params = new URLSearchParams();
+                    params.append('hash', hash);
+                    return fetch('{:url("upload/resolve")}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString()
+                    }).then(function(r) { return r.json(); }).then(function(resolveData) {
+                        return { hash: hash, resolveData: resolveData };
+                    });
+                })
+                .then(function(result) {
+                    if (!result) return;
+                    var url = result.resolveData.data.url;
+                    replyUploadedFiles.push({ name: file.name, url: url, hash: result.hash });
+                    statusEl.classList.add('hidden');
+                    renderReplyImages();
+                })
+                .catch(function(err) {
+                    console.error(err);
+                    showToast('上传失败', 'error');
+                    statusEl.classList.add('hidden');
+                });
+        })(files[i]);
+    }
+    e.target.value = '';
+}
+
+function renderReplyImages() {
+    var previewEl = document.getElementById('replyImagePreview');
+    var html = '';
+    replyUploadedFiles.forEach(function(f, idx) {
+        var isImg = /\.(jpg|jpeg|gif|png|bmp|webp)$/i.test(f.name);
+        html += '<div class="relative inline-block">';
+        if (isImg) {
+            html += '<img src="' + f.url + '" class="w-16 h-16 object-cover border border-gray-200 rounded" />';
+        } else {
+            html += '<span class="inline-flex items-center px-2 py-1 bg-white border border-gray-200 rounded text-xs text-blue-600">' + f.name + '</span>';
+        }
+        html += '<button type="button" onclick="removeReplyImage(' + idx + ')" class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">x</button>';
+        html += '</div>';
+    });
+    previewEl.innerHTML = html;
+}
+
+function removeReplyImage(idx) {
+    replyUploadedFiles.splice(idx, 1);
+    renderReplyImages();
+}
+
 function submitReply() {
     var content = document.getElementById('replyContent').value.trim();
     if (!content) { showToast('请输入回复内容', 'error'); return; }
     var body = new URLSearchParams();
     body.append('id', {$ticket['id']});
     body.append('content', content);
+    if (replyUploadedFiles.length > 0) {
+        body.append('attachments', JSON.stringify(replyUploadedFiles));
+    }
     fetch("{:url('ticket/reply')}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

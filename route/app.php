@@ -45,6 +45,10 @@ Route::group(function () {
     Route::get('admin_setting/index', 'adminSetting/index');
     Route::post('admin_setting/save', 'adminSetting/save');
 
+    // 文件上传
+    Route::get('upload/token', 'upload/token');
+    Route::post('upload/resolve', 'upload/resolve');
+
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');
 });
