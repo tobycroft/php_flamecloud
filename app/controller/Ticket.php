@@ -91,6 +91,17 @@ class Ticket extends BaseController
         $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
         $statusCnt = FcTicketModel::countByStatus();
 
+        $params = [];
+        if ($keyword !== '') $params[] = 'keyword=' . urlencode($keyword);
+        if ($status !== '') $params[] = 'status=' . urlencode($status);
+        if ($category !== '') $params[] = 'category=' . urlencode($category);
+        if ($urgency !== '') $params[] = 'urgency=' . urlencode($urgency);
+        if ($dateStart !== '') $params[] = 'date_start=' . urlencode($dateStart);
+        if ($dateEnd !== '') $params[] = 'date_end=' . urlencode($dateEnd);
+        $pQuery = !empty($params) ? '?' . implode('&', $params) . '&' : '?';
+        $pStart = max(1, $page - 2);
+        $pEnd   = min($totalPage, $page + 2);
+
         View::assign([
             'list'          => $result['list'],
             'total'         => $result['total'],
@@ -102,6 +113,9 @@ class Ticket extends BaseController
             'urgency'       => $urgency,
             'date_start'    => $dateStart,
             'date_end'      => $dateEnd,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
             'status_map'    => self::STATUS_MAP,
             'urgency_map'   => self::URGENCY_MAP,
             'category_map'  => self::CATEGORY_MAP,

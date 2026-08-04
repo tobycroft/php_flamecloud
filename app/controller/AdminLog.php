@@ -27,6 +27,13 @@ class AdminLog extends BaseController
         $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
         $types     = AdminLogTypeModel::getAll();
 
+        $params = [];
+        if ($typeCode !== '') $params[] = 'type_code=' . urlencode($typeCode);
+        if ($keyword !== '') $params[] = 'keyword=' . urlencode($keyword);
+        $pQuery = !empty($params) ? '?' . implode('&', $params) . '&' : '?';
+        $pStart = max(1, $page - 2);
+        $pEnd   = min($totalPage, $page + 2);
+
         View::assign([
             'list'            => $result['list'],
             'total'           => $result['total'],
@@ -35,6 +42,9 @@ class AdminLog extends BaseController
             'type_code'       => $typeCode,
             'keyword'         => $keyword,
             'types'           => $types,
+            'p_query'         => $pQuery,
+            'p_start'         => $pStart,
+            'p_end'           => $pEnd,
             'admin_name'      => Session::get('admin_name', '管理员'),
             'admin_username'  => Session::get('admin_username', ''),
             'admin_id'        => (int) Session::get('admin_id', 0),

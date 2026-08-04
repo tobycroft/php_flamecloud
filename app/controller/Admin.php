@@ -34,6 +34,9 @@ class Admin extends BaseController
 
         $result = AdminUserModel::getList($page, $limit, $keyword);
         $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = $keyword !== '' ? '?keyword=' . urlencode($keyword) . '&' : '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
 
         View::assign([
             'list'        => $result['list'],
@@ -41,6 +44,9 @@ class Admin extends BaseController
             'page'        => $page,
             'totalPage'   => $totalPage,
             'keyword'     => $keyword,
+            'p_query'     => $pQuery,
+            'p_start'     => $pStart,
+            'p_end'       => $pEnd,
             'admin_name'  => Session::get('admin_name', '管理员'),
             'admin_username' => Session::get('admin_username', ''),
             'admin_id'    => (int) Session::get('admin_id', 0),
