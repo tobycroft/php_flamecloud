@@ -172,12 +172,12 @@ class Ticket extends BaseController
             return json(['code' => 1, 'msg' => '请输入回复内容']);
         }
 
-        $ticket = FcTicketModel::find($id);
+        $ticket = FcTicketModel::findById($id);
         if (empty($ticket)) {
             return json(['code' => 1, 'msg' => '工单不存在']);
         }
 
-        $status = (int) $ticket->status;
+        $status = (int) $ticket['status'];
         if ($status === 3) {
             return json(['code' => 1, 'msg' => '工单已关闭，不可回复']);
         }
@@ -195,7 +195,7 @@ class Ticket extends BaseController
         // 向用户推送站内信
         $title   = '工单 #' . $id . ' 有新的回复';
         $notice  = '客服已回复您的工单，请查看详情。';
-        FcUserNotificationModel::push((int) $ticket->uid, $title, $notice, 'info');
+        FcUserNotificationModel::push((int) $ticket['uid'], $title, $notice, 'info');
 
         AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
             'type_code'   => 'ticket_reply',
@@ -222,19 +222,19 @@ class Ticket extends BaseController
             return json(['code' => 1, 'msg' => '参数错误']);
         }
 
-        $ticket = FcTicketModel::find($id);
+        $ticket = FcTicketModel::findById($id);
         if (empty($ticket)) {
             return json(['code' => 1, 'msg' => '工单不存在']);
         }
 
-        if ((int) $ticket->status === 3) {
+        if ((int) $ticket['status'] === 3) {
             return json(['code' => 1, 'msg' => '工单已关闭']);
         }
 
         if (FcTicketModel::updateStatus($id, 3)) {
             // 通知用户工单已关闭
             FcUserNotificationModel::push(
-                (int) $ticket->uid,
+                (int) $ticket['uid'],
                 '工单 #' . $id . ' 已关闭',
                 '您的工单已结案关闭，如有需要请重新提交。',
                 'system'

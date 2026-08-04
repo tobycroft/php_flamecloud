@@ -30,7 +30,7 @@ class FcTicketModel extends Model
      */
     public static function getList(int $page = 1, int $limit = 15, array $filters = []): array
     {
-        $query = self::order('id', 'desc');
+        $query = self::whereNull('deleted_at')->order('id', 'desc');
 
         $keyword = $filters['keyword'] ?? '';
         if ($keyword !== '') {
@@ -100,7 +100,7 @@ class FcTicketModel extends Model
      */
     public static function findById(int $id): ?array
     {
-        $ticket = self::find($id);
+        $ticket = self::whereNull('deleted_at')->find($id);
         if (empty($ticket)) {
             return null;
         }
@@ -127,7 +127,7 @@ class FcTicketModel extends Model
      */
     public static function countPendingReply(): int
     {
-        return (int) self::where('status', 1)->count();
+        return (int) self::whereNull('deleted_at')->where('status', 1)->count();
     }
 
     /**
@@ -135,7 +135,8 @@ class FcTicketModel extends Model
      */
     public static function countByStatus(): array
     {
-        $rows = self::field('status, COUNT(*) as cnt')
+        $rows = self::whereNull('deleted_at')
+            ->field('status, COUNT(*) as cnt')
             ->group('status')
             ->select()
             ->toArray();
