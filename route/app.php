@@ -57,6 +57,15 @@ Route::group(function () {
     Route::post('recharge_audit/reject', 'recharge_audit/reject');
     Route::get('recharge_audit/pending_count', 'recharge_audit/pending_count');
 
+    // 实名认证审核
+    Route::get('user_verification', 'user_verification/index');
+    Route::get('user_verification/index', 'user_verification/index');
+    Route::get('user_verification/detail', 'user_verification/detail');
+    Route::post('user_verification/approve', 'user_verification/approve');
+    Route::post('user_verification/reject', 'user_verification/reject');
+    Route::post('user_verification/edit', 'user_verification/edit');
+    Route::get('user_verification/pending_count', 'user_verification/pending_count');
+
     // 用户余额
     Route::get('user_balance', 'user_balance/index');
     Route::get('user_balance/index', 'user_balance/index');

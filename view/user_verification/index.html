@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 实名认证审核</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">实名认证审核</h1>
+        {if $pending_audit > 0}
+        <span class="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 mr-1"></span>{$pending_audit} 待审核
+        </span>
+        {/if}
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-5 pt-4 border-b border-gray-100">
+                <div class="flex flex-wrap gap-1">
+                    <a href="{:url('user_verification/index')}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">全部（{$total}）</a>
+                    {foreach $status_map as $k => $v}
+                    <a href="{:url('user_verification/index', ['status' => $k])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === (string)$k ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">{$v['text']}（{$status_cnt[$k] ?? 0}）</a>
+                    {/foreach}
+                </div>
+            </div>
+
+            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
+                <form method="get" action="{:url('user_verification/index')}" class="flex items-center gap-2 flex-wrap">
+                    <select name="status" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部状态</option>
+                        {foreach $status_map as $k => $v}
+                        <option value="{$k}" {$status === (string)$k ? 'selected' : ''}>{$v['text']}</option>
+                        {/foreach}
+                    </select>
+
+                    <select name="type" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="">全部类型</option>
+                        {foreach $type_map as $k => $v}
+                        <option value="{$k}" {$type === (string)$k ? 'selected' : ''}>{$v}</option>
+                        {/foreach}
+                    </select>
+
+                    <input type="text" name="keyword" value="{$keyword}" placeholder="搜索姓名/身份证/企业/UID"
+                        class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm w-48" />
+
+                    <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-sm transition-colors">搜索</button>
+                </form>
+            </div>
+
+            {if !empty($list)}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">ID</th>
+                            <th class="px-5 py-3 text-left font-medium">UID</th>
+                            <th class="px-5 py-3 text-left font-medium">类型</th>
+                            <th class="px-5 py-3 text-left font-medium">姓名</th>
+                            <th class="px-5 py-3 text-left font-medium">身份证号</th>
+                            <th class="px-5 py-3 text-left font-medium">企业名称</th>
+                            <th class="px-5 py-3 text-left font-medium">状态</th>
+                            <th class="px-5 py-3 text-left font-medium">提交时间</th>
+                            <th class="px-5 py-3 text-left font-medium">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {foreach $list as $item}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-5 py-3 font-mono text-xs">{$item['id']}</td>
+                            <td class="px-5 py-3 font-mono text-xs">{$item['uid']}</td>
+                            <td class="px-5 py-3">{$type_map[$item['type']] ?? '-'}</td>
+                            <td class="px-5 py-3">{$item['real_name']}</td>
+                            <td class="px-5 py-3 font-mono text-xs">{$item['id_card']}</td>
+                            <td class="px-5 py-3">{$item['company_name'] ?: '-'}</td>
+                            <td class="px-5 py-3">
+                                {assign name="st" value="$status_map[(int)$item['status']] ?? null" /}
+                                {if $st}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {$st['color']}">{$st['text']}</span>
+                                {/if}
+                            </td>
+                            <td class="px-5 py-3 text-xs text-gray-400">{$item['created_at'] ?? '-'}</td>
+                            <td class="px-5 py-3">
+                                <a href="{:url('user_verification/detail', ['id' => $item['id']])}" class="text-orange-500 hover:text-orange-600 text-sm font-medium">查看详情</a>
+                            </td>
+                        </tr>
+                        {/foreach}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+                <div class="text-sm text-gray-400">共 {$total} 条记录</div>
+                <div class="flex items-center gap-1">
+                    {if $page > 1}
+                    <a href="{:url('user_verification/index')}{$p_query}page=1" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">首页</a>
+                    <a href="{:url('user_verification/index')}{$p_query}page={$page-1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">上一页</a>
+                    {/if}
+                    {for start="$p_start" end="$p_end"}
+                    <a href="{:url('user_verification/index')}{$p_query}page={$i}" class="px-3 py-1.5 border rounded-md text-sm transition-colors {$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}">{$i}</a>
+                    {/for}
+                    {if $page < $totalPage}
+                    <a href="{:url('user_verification/index')}{$p_query}page={$page+1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">下一页</a>
+                    <a href="{:url('user_verification/index')}{$p_query}page={$totalPage}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">末页</a>
+                    {/if}
+                </div>
+            </div>
+            {else /}
+            <div class="px-5 py-12 text-center text-gray-400">
+                <svg class="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                <p>暂无数据</p>
+            </div>
+            {/if}
+        </div>
+    </main>
+</div>
+
+{include file="common/footer" /}
+
+</body>
+</html>

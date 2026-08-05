@@ -27,6 +27,16 @@ const menus = [
         ]
     },
     {
+        title: '实名认证',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>',
+        children: [
+            { title: '全部认证', url: '{:url("user_verification/index")}' },
+            { title: '待审核', url: '{:url("user_verification/index", ["status" => "0"])}' },
+            { title: '已通过', url: '{:url("user_verification/index", ["status" => "1"])}' },
+            { title: '已拒绝', url: '{:url("user_verification/index", ["status" => "2"])}' }
+        ]
+    },
+    {
         title: '工单系统',
         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h4m0 0l-3-3m3 3l-3 3M5 7a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
         children: [
@@ -107,6 +117,9 @@ function renderMenu() {
             if (menu.title === '财务管理') {
                 html += '<span id="rechargeBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
             }
+            if (menu.title === '实名认证') {
+                html += '<span id="verificationBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full ml-1"></span>';
+            }
             html += '<svg class="w-4 h-4 transition-transform duration-150 ' + (open ? 'rotate-90' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
             html += '</div>';
             html += '<div class="overflow-hidden transition-all duration-200 ' + (open ? 'max-h-96' : 'max-h-0') + '">';
@@ -164,6 +177,24 @@ function fetchRechargePending() {
 }
 fetchRechargePending();
 setInterval(fetchRechargePending, 60000);
+
+// 实名认证审核红点提醒：轮询待审核数
+function fetchVerificationPending() {
+    fetch('{:url("user_verification/pending_count")}')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0 && res.count > 0) {
+                var badge = document.getElementById('verificationBadge');
+                if (badge) {
+                    badge.textContent = res.count > 99 ? '99+' : res.count;
+                    badge.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(function() {});
+}
+fetchVerificationPending();
+setInterval(fetchVerificationPending, 60000);
 
 // 空闲超时监控
 (function () {

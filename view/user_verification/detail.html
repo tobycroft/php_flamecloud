@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 实名认证详情</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 class="text-lg font-semibold">实名认证详情</h1>
+        <a href="{:url('user_verification/index')}" class="ml-4 text-sm text-orange-500 hover:text-orange-600">&larr; 返回列表</a>
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="max-w-3xl mx-auto">
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="font-semibold">认证记录 #{$record['id']}</h2>
+                        <p class="text-sm text-gray-400">UID: {$record['uid']}</p>
+                    </div>
+                    {assign name="st" value="$status_map[(int)$record['status']] ?? null" /}
+                    {if $st}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {$st['color']}">{$st['text']}</span>
+                    {/if}
+                </div>
+
+                <div class="px-6 py-4 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <span class="block text-sm text-gray-400">认证类型</span>
+                            <span class="font-medium">{$type_map[$record['type']] ?? '-'}</span>
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400">姓名</span>
+                            <span class="font-medium">{$record['real_name']}</span>
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400">身份证号</span>
+                            <span class="font-medium font-mono">{$record['id_card']}</span>
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400">手机号</span>
+                            <span class="font-medium">{$record['phone'] ?: '-'}</span>
+                        </div>
+                        {if (int)$record['type'] === 2}
+                        <div>
+                            <span class="block text-sm text-gray-400">企业名称</span>
+                            <span class="font-medium">{$record['company_name']}</span>
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400">统一社会信用代码</span>
+                            <span class="font-medium font-mono">{$record['credit_code']}</span>
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400">法人代表</span>
+                            <span class="font-medium">{$record['legal_person'] ?: '-'}</span>
+                        </div>
+                        {/if}
+                        <div>
+                            <span class="block text-sm text-gray-400">提交时间</span>
+                            <span class="font-medium">{$record['created_at'] ?? '-'}</span>
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400">更新时间</span>
+                            <span class="font-medium">{$record['updated_at'] ?? '-'}</span>
+                        </div>
+                        {if $record['remark']}
+                        <div class="md:col-span-2">
+                            <span class="block text-sm text-gray-400">审核备注</span>
+                            <span class="font-medium text-red-600">{$record['remark']}</span>
+                        </div>
+                        {/if}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <span class="block text-sm text-gray-400 mb-2">身份证正面</span>
+                            {if $record['id_card_front']}
+                            <img src="{$record['id_card_front']}" alt="身份证正面" class="w-full max-w-xs rounded-lg border border-gray-200" />
+                            {else /}
+                            <span class="text-gray-400">未上传</span>
+                            {/if}
+                        </div>
+                        <div>
+                            <span class="block text-sm text-gray-400 mb-2">身份证背面</span>
+                            {if $record['id_card_back']}
+                            <img src="{$record['id_card_back']}" alt="身份证背面" class="w-full max-w-xs rounded-lg border border-gray-200" />
+                            {else /}
+                            <span class="text-gray-400">未上传</span>
+                            {/if}
+                        </div>
+                        {if (int)$record['type'] === 2}
+                        <div class="md:col-span-2">
+                            <span class="block text-sm text-gray-400 mb-2">营业执照</span>
+                            {if $record['business_license']}
+                            <img src="{$record['business_license']}" alt="营业执照" class="w-full max-w-md rounded-lg border border-gray-200" />
+                            {else /}
+                            <span class="text-gray-400">未上传</span>
+                            {/if}
+                        </div>
+                        {/if}
+                    </div>
+                </div>
+
+                {if (int)$record['status'] === 0}
+                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                    <h3 class="font-semibold mb-3">审核操作</h3>
+
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-500 mb-2">修改认证数据</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <input type="text" id="edit_real_name" placeholder="姓名" value="{$record['real_name']}"
+                                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                            </div>
+                            <div>
+                                <input type="text" id="edit_id_card" placeholder="身份证号" value="{$record['id_card']}"
+                                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                            </div>
+                            <div>
+                                <input type="text" id="edit_phone" placeholder="手机号" value="{$record['phone']}"
+                                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                            </div>
+                            {if (int)$record['type'] === 2}
+                            <div>
+                                <input type="text" id="edit_company_name" placeholder="企业名称" value="{$record['company_name']}"
+                                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                            </div>
+                            <div>
+                                <input type="text" id="edit_credit_code" placeholder="统一社会信用代码" value="{$record['credit_code']}"
+                                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                            </div>
+                            <div>
+                                <input type="text" id="edit_legal_person" placeholder="法人代表" value="{$record['legal_person']}"
+                                    class="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                            </div>
+                            {/if}
+                        </div>
+                        <button onclick="editVerification({$record['id']})" class="mt-3 px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">保存修改</button>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button onclick="approveVerification({$record['id']})" class="px-6 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">审核通过</button>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="reject_reason" placeholder="拒绝原因（可选）"
+                                class="w-48 px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none text-sm" />
+                            <button onclick="rejectVerification({$record['id']})" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium">拒绝</button>
+                        </div>
+                    </div>
+                </div>
+                {/if}
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function editVerification(id) {
+    if (!confirm('确定要修改此认证数据吗？')) return;
+
+    var data = {
+        id: id,
+        real_name: document.getElementById('edit_real_name').value,
+        id_card: document.getElementById('edit_id_card').value,
+        phone: document.getElementById('edit_phone').value
+    };
+
+    var companyName = document.getElementById('edit_company_name');
+    if (companyName) {
+        data.company_name = companyName.value;
+        data.credit_code = document.getElementById('edit_credit_code').value;
+        data.legal_person = document.getElementById('edit_legal_person').value;
+    }
+
+    fetch('{:url("user_verification/edit")}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(data).toString()
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.code === 0) {
+            alert('修改成功');
+            location.reload();
+        } else {
+            alert(res.msg || '修改失败');
+        }
+    })
+    .catch(function(e) {
+        alert('请求失败: ' + e.message);
+    });
+}
+
+function approveVerification(id) {
+    if (!confirm('确定要通过此认证申请吗？')) return;
+
+    fetch('{:url("user_verification/approve")}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + id
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.code === 0) {
+            alert('审核通过');
+            location.href = '{:url("user_verification/index")}';
+        } else {
+            alert(res.msg || '操作失败');
+        }
+    })
+    .catch(function(e) {
+        alert('请求失败: ' + e.message);
+    });
+}
+
+function rejectVerification(id) {
+    if (!confirm('确定要拒绝此认证申请吗？')) return;
+
+    var reason = document.getElementById('reject_reason').value;
+
+    fetch('{:url("user_verification/reject")}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + id + '&reason=' + encodeURIComponent(reason)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.code === 0) {
+            alert('已拒绝');
+            location.href = '{:url("user_verification/index")}';
+        } else {
+            alert(res.msg || '操作失败');
+        }
+    })
+    .catch(function(e) {
+        alert('请求失败: ' + e.message);
+    });
+}
+</script>
+
+{include file="common/footer" /}
+</body>
+</html>
