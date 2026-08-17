@@ -52,6 +52,12 @@ class Ticket extends BaseController
         'elastic_ip'  => '弹性IP',
         'auto_scale'  => '负载均衡',
         'other'       => '其他',
+        'chat'        => '在线客服',
+    ];
+
+    const TICKET_TYPE_MAP = [
+        'standard' => ['text' => '标准工单', 'color' => 'bg-blue-50 text-blue-600'],
+        'chat'     => ['text' => '在线客服', 'color' => 'bg-green-50 text-green-600'],
     ];
 
     private function getLogMeta(): array
@@ -119,7 +125,9 @@ class Ticket extends BaseController
             'status_map'    => self::STATUS_MAP,
             'urgency_map'   => self::URGENCY_MAP,
             'category_map'  => self::CATEGORY_MAP,
+            'ticket_type_map' => self::TICKET_TYPE_MAP,
             'status_cnt'    => $statusCnt,
+            'chat_count'    => FcTicketModel::countChat(),
             'pending_reply' => FcTicketModel::countPendingReply(),
             'admin_name'    => Session::get('admin_name', '管理员'),
             'admin_username'=> Session::get('admin_username', ''),
@@ -163,6 +171,7 @@ class Ticket extends BaseController
             'status_map'   => self::STATUS_MAP,
             'urgency_map'  => self::URGENCY_MAP,
             'category_map' => self::CATEGORY_MAP,
+            'ticket_type_map' => self::TICKET_TYPE_MAP,
             'admin_name'     => Session::get('admin_name', '管理员'),
             'admin_username' => Session::get('admin_username', ''),
             'admin_id'       => (int) Session::get('admin_id', 0),
@@ -220,6 +229,7 @@ class Ticket extends BaseController
 
         // 工单状态置为"客服答复"(2)
         FcTicketModel::updateStatus($id, 2);
+        FcTicketModel::updateLastReplyAt($id);
 
         // 向用户推送站内信
         $title   = '工单 #' . $id . ' 有新的回复';
@@ -234,7 +244,7 @@ class Ticket extends BaseController
             'target_id'   => $id,
         ]));
 
-        return json(['code' => 0, 'msg' => '关闭成功']);
+        return json(['code' => 0, 'msg' => '回复成功']);
     }
 
     /**
@@ -320,6 +330,84 @@ class Ticket extends BaseController
         return json([
             'code'   => 0,
             'count'  => FcTicketModel::countPendingReply(),
+        ]);
+    }
+
+    /**
+     * 聊天工单转标准工单
+     */
+    public function convert()
+    {
+        if (!$this->request->isPost()) {
+            return json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $id       = (int) $this->request->post('id', 0);
+        $category = trim((string) $this->request->post('category', ''));
+        $urgency  = trim((string) $this->request->post('urgency', ''));
+
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+        if ($category === '') {
+            return json(['code' => 1, 'msg' => '请选择问题分类']);
+        }
+        if ($urgency === '') {
+            return json(['code' => 1, 'msg' => '请选择紧急性']);
+        }
+        if (!in_array($urgency, ['fault', 'usage', 'consult'])) {
+            return json(['code' => 1, 'msg' => '紧急性参数错误']);
+        }
+
+        $ticket = FcTicketModel::findById($id);
+        if (empty($ticket)) {
+            return json(['code' => 1, 'msg' => '工单不存在']);
+        }
+
+        $ticketType = $ticket['ticket_type'] ?? 'standard';
+        if ($ticketType !== 'chat') {
+            return json(['code' => 1, 'msg' => '只有聊天工单才能转为标准工单']);
+        }
+
+        if (FcTicketModel::convertToStandard($id, $category, $urgency)) {
+            AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
+                'type_code'   => 'ticket_convert',
+                'action'      => '转换工单',
+                'detail'      => '聊天工单 #' . $id . ' 转为标准工单，分类: ' . $category . '，紧急性: ' . $urgency,
+                'target_type' => 'ticket',
+                'target_id'   => $id,
+            ]));
+            return json(['code' => 0, 'msg' => '工单转换成功']);
+        }
+        return json(['code' => 1, 'msg' => '操作失败']);
+    }
+
+    /**
+     * 轮询工单是否有新回复（供客服端实时刷新）
+     */
+    public function poll()
+    {
+        $id = (int) $this->request->get('id', 0);
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+
+        $ticket = FcTicketModel::findById($id);
+        if (empty($ticket)) {
+            return json(['code' => 1, 'msg' => '工单不存在']);
+        }
+
+        $lastReplyAt = $ticket['last_reply_at'] ?? '';
+        $clientLast  = trim((string) $this->request->get('last_reply_at', ''));
+        $hasNew      = false;
+        if ($lastReplyAt !== '' && ($clientLast === '' || $lastReplyAt > $clientLast)) {
+            $hasNew = true;
+        }
+
+        return json([
+            'code'          => 0,
+            'last_reply_at' => $lastReplyAt,
+            'has_new'       => $hasNew,
         ]);
     }
 }

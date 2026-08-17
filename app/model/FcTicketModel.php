@@ -146,4 +146,36 @@ class FcTicketModel extends Model
         }
         return $ret;
     }
+
+    /**
+     * 更新最后回复时间
+     */
+    public static function updateLastReplyAt(int $id): bool
+    {
+        return self::update(['id' => $id, 'last_reply_at' => date('Y-m-d H:i:s')]) !== false;
+    }
+
+    /**
+     * 聊天工单转标准工单
+     */
+    public static function convertToStandard(int $id, string $category, string $urgency): bool
+    {
+        return self::update([
+            'id'          => $id,
+            'ticket_type' => 'standard',
+            'category'    => $category,
+            'urgency'     => $urgency,
+        ]) !== false;
+    }
+
+    /**
+     * 统计聊天工单数
+     */
+    public static function countChat(): int
+    {
+        return (int) self::whereNull('deleted_at')
+            ->where('ticket_type', 'chat')
+            ->where('status', '<>', 3)
+            ->count();
+    }
 }

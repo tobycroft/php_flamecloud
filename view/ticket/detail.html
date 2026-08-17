@@ -19,6 +19,10 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         </a>
         <h1 id="pageTitle" class="text-lg font-semibold">工单 #{$ticket['id']}</h1>
+        {assign name="tt" value="$ticket_type_map[$ticket['ticket_type'] ?? 'standard'] ?? null" /}
+        {if $tt}
+        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs {$tt['color']}">{$tt['text']}</span>
+        {/if}
         {assign name="st" value="$status_map[(int)$ticket['status']] ?? null" /}
         {if $st}
         <span class="ml-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs {$st['color']}">
@@ -181,7 +185,12 @@
                 <div id="replyImagePreview" class="mt-2 flex flex-wrap gap-2"></div>
                 <div class="mt-3 flex items-center justify-between">
                     <button onclick="closeTicket()" class="px-4 py-2 text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">结案关闭</button>
-                    <button onclick="submitReply()" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">发送回复</button>
+                    <div class="flex items-center gap-2">
+                        {if ($ticket['ticket_type'] ?? 'standard') === 'chat'}
+                        <button onclick="showConvertDialog()" class="px-4 py-2 text-sm text-green-600 border border-green-300 hover:bg-green-50 rounded-lg transition-colors">转为标准工单</button>
+                        {/if}
+                        <button onclick="submitReply()" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">发送回复</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -300,6 +309,96 @@ function closeTicket() {
     var body = new URLSearchParams();
     body.append('id', {$ticket['id']});
     fetch("{:url('ticket/close')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) setTimeout(function() { location.reload(); }, 600);
+    });
+}
+
+var currentLastReplyAt = '{$ticket['last_reply_at'] ?? ''}';
+var pollInterval = null;
+
+function startPolling() {
+    pollInterval = setInterval(function() {
+        fetch("{:url('ticket/poll')}?id={$ticket['id']}&last_reply_at=" + encodeURIComponent(currentLastReplyAt))
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.code === 0 && res.has_new) {
+                    currentLastReplyAt = res.last_reply_at || '';
+                    location.reload();
+                }
+            });
+    }, 5000);
+}
+
+function stopPolling() {
+    if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+    }
+}
+
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        stopPolling();
+    } else {
+        startPolling();
+    }
+});
+
+startPolling();
+
+function showConvertDialog() {
+    var overlay = document.createElement('div');
+    overlay.id = 'convertOverlay';
+    overlay.className = 'fixed inset-0 z-50 bg-black/50 flex items-center justify-center';
+    overlay.innerHTML = '<div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">' +
+        '<h3 class="text-lg font-semibold mb-4">聊天工单转标准工单</h3>' +
+        '<p class="text-sm text-gray-500 mb-4">转换后工单类型将变为标准工单，请选择分类和紧急性</p>' +
+        '<div class="space-y-3">' +
+        '<div>' +
+        '<label class="block text-sm text-gray-600 mb-1">问题分类</label>' +
+        '<select id="convertCategory" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">' +
+        '{foreach $category_map as $k => $v}' +
+        '{if $k !== "chat"}' +
+        '<option value="{$k}">{$v}</option>' +
+        '{/if}' +
+        '{/foreach}' +
+        '</select>' +
+        '</div>' +
+        '<div>' +
+        '<label class="block text-sm text-gray-600 mb-1">紧急性</label>' +
+        '<select id="convertUrgency" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">' +
+        '<option value="fault">产品故障</option>' +
+        '<option value="usage">产品使用问题</option>' +
+        '<option value="consult">产品咨询</option>' +
+        '</select>' +
+        '</div>' +
+        '</div>' +
+        '<div class="mt-5 flex justify-end gap-2">' +
+        '<button onclick="closeConvertDialog()" class="px-4 py-2 text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">取消</button>' +
+        '<button onclick="doConvert()" class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors">确认转换</button>' +
+        '</div>' +
+        '</div>';
+    document.body.appendChild(overlay);
+}
+
+function closeConvertDialog() {
+    var overlay = document.getElementById('convertOverlay');
+    if (overlay) overlay.remove();
+}
+
+function doConvert() {
+    var category = document.getElementById('convertCategory').value;
+    var urgency = document.getElementById('convertUrgency').value;
+    var body = new URLSearchParams();
+    body.append('id', {$ticket['id']});
+    body.append('category', category);
+    body.append('urgency', urgency);
+    fetch("{:url('ticket/convert')}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()

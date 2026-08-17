@@ -39,6 +39,8 @@ Route::group(function () {
     Route::post('ticket/close', 'ticket/close');
     Route::post('ticket/reopen', 'ticket/reopen');
     Route::get('ticket/pending_count', 'ticket/pending_count');
+    Route::post('ticket/convert', 'ticket/convert');
+    Route::get('ticket/poll', 'ticket/poll');
 
     // 个人设置
     Route::get('admin_setting', 'adminSetting/index');

@@ -38,6 +38,12 @@
                     </a>
                     <a href="{:url('ticket/index', ['status' => 2])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '2' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">客服答复（{$status_cnt[2]}）</a>
                     <a href="{:url('ticket/index', ['status' => 3])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '3' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">结案关闭（{$status_cnt[3]}）</a>
+                    <a href="{:url('ticket/index', ['category' => 'chat'])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$category === 'chat' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">
+                        在线客服（{$chat_count}）
+                        {if $chat_count > 0}
+                        <span class="ml-1 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        {/if}
+                    </a>
                 </div>
             </div>
 
@@ -87,6 +93,7 @@
                         <tr>
                             <th class="px-5 py-3 text-left font-medium">ID</th>
                             <th class="px-5 py-3 text-left font-medium">用户</th>
+                            <th class="px-5 py-3 text-left font-medium">类型</th>
                             <th class="px-5 py-3 text-left font-medium">问题描述</th>
                             <th class="px-5 py-3 text-left font-medium">分类</th>
                             <th class="px-5 py-3 text-left font-medium">紧急性</th>
@@ -98,7 +105,7 @@
                     <tbody class="divide-y divide-gray-100">
                         {if empty($list)}
                         <tr>
-                            <td colspan="8" class="px-5 py-16 text-center text-gray-400">暂无工单数据</td>
+                            <td colspan="9" class="px-5 py-16 text-center text-gray-400">暂无工单数据</td>
                         </tr>
                         {else /}
                         {foreach $list as $item}
@@ -109,6 +116,12 @@
                                     <span class="font-medium text-gray-700">{$item['user_username'] ?: '-'}</span>
                                     <span class="text-xs text-gray-400 font-mono">{$item['user_phone'] ?: ''}</span>
                                 </div>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                {assign name="tt" value="$ticket_type_map[$item['ticket_type'] ?? 'standard'] ?? null" /}
+                                {if $tt}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs {$tt['color']}">{$tt['text']}</span>
+                                {/if}
                             </td>
                             <td class="px-5 py-3.5 max-w-sm">
                                 <div class="text-gray-700 truncate">{:htmlspecialchars((string)$item['description'])}</div>
