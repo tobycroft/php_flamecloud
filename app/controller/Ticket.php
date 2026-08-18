@@ -207,11 +207,6 @@ class Ticket extends BaseController
             return json(['code' => 1, 'msg' => '工单不存在']);
         }
 
-        $status = (int) $ticket['status'];
-        if ($status === 3) {
-            return json(['code' => 1, 'msg' => '工单已关闭，不可回复']);
-        }
-
         $adminId = (int) Session::get('admin_id', 0);
 
         $replyId = FcTicketReplyModel::adminReply($id, $adminId, $content);
