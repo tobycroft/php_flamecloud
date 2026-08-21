@@ -44,6 +44,13 @@ const menus = [
         ]
     },
     {
+        title: '在线客服',
+        icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>',
+        children: [
+            { title: '聊天列表', url: '{:url("chat/index")}' }
+        ]
+    },
+    {
         title: '管理员管理',
         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>',
         children: [
@@ -113,6 +120,10 @@ function renderMenu() {
             if (menu.title === '工单系统') {
                 html += '<span id="ticketBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
             }
+            // 在线客服菜单添加红点徽章容器
+            if (menu.title === '在线客服') {
+                html += '<span id="chatBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
+            }
             // 财务管理菜单添加充值审核角标
             if (menu.title === '财务管理') {
                 html += '<span id="rechargeBadge" class="hidden inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-medium text-white bg-red-500 rounded-full"></span>';
@@ -157,16 +168,14 @@ function showToast(msg, type) {
 }
 
 renderMenu();
-fetchTicketPending();
-setInterval(fetchTicketPending, 15000);
 
-// 充值审核红点提醒：轮询待审核数
-function fetchRechargePending() {
-    fetch('{:url("recharge_audit/pending_count")}')
+// 工单红点提醒：轮询待回复工单数
+function fetchTicketPending() {
+    fetch('{:url("ticket/pending_count")}')
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res.code === 0 && res.count > 0) {
-                var badge = document.getElementById('rechargeBadge');
+                var badge = document.getElementById('ticketBadge');
                 if (badge) {
                     badge.textContent = res.count > 99 ? '99+' : res.count;
                     badge.classList.remove('hidden');
@@ -175,8 +184,26 @@ function fetchRechargePending() {
         })
         .catch(function() {});
 }
-fetchRechargePending();
-setInterval(fetchRechargePending, 15000);
+fetchTicketPending();
+setInterval(fetchTicketPending, 15000);
+
+// 在线客服红点提醒：轮询未读聊天用户数
+function fetchChatPending() {
+    fetch('{:url("chat/pending_count")}')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0 && res.count > 0) {
+                var badge = document.getElementById('chatBadge');
+                if (badge) {
+                    badge.textContent = res.count > 99 ? '99+' : res.count;
+                    badge.classList.remove('hidden');
+                }
+            }
+        })
+        .catch(function() {});
+}
+fetchChatPending();
+setInterval(fetchChatPending, 15000);
 
 // 实名认证审核红点提醒：轮询待审核数
 function fetchVerificationPending() {

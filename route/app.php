@@ -78,4 +78,11 @@ Route::group(function () {
 
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');
+
+    // 在线客服
+    Route::get('chat', 'chat/index');
+    Route::get('chat/index', 'chat/index');
+    Route::get('chat/detail', 'chat/detail');
+    Route::post('chat/reply', 'chat/reply');
+    Route::get('chat/pending_count', 'chat/pending_count');
 });
