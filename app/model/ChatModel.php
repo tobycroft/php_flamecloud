@@ -35,6 +35,16 @@ class ChatModel extends Model
         return count($list);
     }
 
+    public static function getTotalUserCount(): int
+    {
+        $list = Db::table('fc_chat')
+            ->distinct(true)
+            ->field('uid')
+            ->select()
+            ->toArray();
+        return count($list);
+    }
+
     public static function getListByUid(int $uid): array
     {
         return Db::table('fc_chat')

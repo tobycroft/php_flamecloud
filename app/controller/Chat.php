@@ -121,4 +121,10 @@ class Chat extends BaseController
         $count = ChatModel::getUnreadCount();
         return json(['code' => 0, 'count' => $count]);
     }
+
+    public function total_count()
+    {
+        $count = ChatModel::getTotalUserCount();
+        return json(['code' => 0, 'count' => $count]);
+    }
 }

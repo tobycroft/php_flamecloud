@@ -85,4 +85,5 @@ Route::group(function () {
     Route::get('chat/detail', 'chat/detail');
     Route::post('chat/reply', 'chat/reply');
     Route::get('chat/pending_count', 'chat/pending_count');
+    Route::get('chat/total_count', 'chat/total_count');
 });
