@@ -65,6 +65,8 @@ class Chat extends BaseController
         });
 
         View::assign('chatUsers', $chatUsers);
+        View::assign('admin_name', Session::get('admin_name', '管理员'));
+        View::assign('admin_username', Session::get('admin_username', ''));
         return View::fetch();
     }
 
@@ -87,6 +89,8 @@ class Chat extends BaseController
         View::assign('uid', $uid);
         View::assign('username', $userInfo['username'] ?? ('用户' . $uid));
         View::assign('messages', $messages);
+        View::assign('admin_name', Session::get('admin_name', '管理员'));
+        View::assign('admin_username', Session::get('admin_username', ''));
         return View::fetch();
     }
 
