@@ -56,18 +56,8 @@
 </div>
 
 <script>
-var initialCount = {$chatUsers|count};
-var pollTimer = setInterval(function() {
-    fetch('{:url("chat/total_count")}')
-        .then(function(r) { return r.json(); })
-        .then(function(res) {
-            if (res.code === 0) {
-                if (res.count !== initialCount) {
-                    location.reload();
-                }
-            }
-        })
-        .catch(function() {});
+setInterval(function() {
+    location.reload();
 }, 5000);
 </script>
 
