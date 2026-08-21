@@ -14,7 +14,7 @@ class Chat extends BaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 
-    public function index()
+    private function getChatListData(): array
     {
         $unreadUids = ChatModel::getUnreadUidList();
         $unreadUidSet = [];
@@ -64,10 +64,23 @@ class Chat extends BaseController
             return strcmp($b['last_time'] ?? '', $a['last_time'] ?? '');
         });
 
+        return $chatUsers;
+    }
+
+    public function index()
+    {
+        $chatUsers = $this->getChatListData();
+
         View::assign('chatUsers', $chatUsers);
         View::assign('admin_name', Session::get('admin_name', '管理员'));
         View::assign('admin_username', Session::get('admin_username', ''));
         return View::fetch();
+    }
+
+    public function list_data()
+    {
+        $chatUsers = $this->getChatListData();
+        return json(['code' => 0, 'data' => $chatUsers]);
     }
 
     public function detail()
