@@ -7,6 +7,7 @@ use app\BaseController;
 use app\model\AdminUserModel;
 use app\model\AdminUserSettingModel;
 use app\model\AdminLogLoginModel;
+use app\model\SystemParamModel;
 use think\App;
 use think\facade\Db;
 use think\facade\Session;
