@@ -8,6 +8,9 @@ Route::get('logout', 'auth/logout');
 
 Route::get('/', 'index/index');
 
+// 客服在线状态（公开）
+Route::get('chat/online_status', 'chat_online/online_status');
+
 Route::group(function () {
     Route::get('admin', 'admin/index');
     Route::get('admin/index', 'admin/index');

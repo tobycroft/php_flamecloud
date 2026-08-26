@@ -9,6 +9,7 @@ use app\model\AdminUserSettingModel;
 use app\model\AdminLogLoginModel;
 use app\model\SystemParamModel;
 use think\App;
+use think\facade\Db;
 use think\facade\Session;
 use think\facade\View;
 use Tobycroft\AossSdk\Captcha;
@@ -118,13 +119,25 @@ class Auth extends BaseController
 
         Session::set('last_activity', time());
 
+        $adminName = (string) Session::get('admin_name', '管理员');
+        $now = time();
+
+        // 更新在线状态表
+        Db::table('fc_admin_online')
+            ->replace(true)
+            ->insert([
+                'admin_id'       => (int) $adminId,
+                'admin_name'     => $adminName,
+                'last_heartbeat' => $now,
+            ]);
+
         $idleTimeout = AdminUserSettingModel::getIdleTimeout((int) $adminId);
 
         return json([
             'code' => 0,
             'data' => [
                 'idle_timeout' => $idleTimeout,
-                'server_time'  => time(),
+                'server_time'  => $now,
             ],
         ]);
     }
