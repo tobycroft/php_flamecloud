@@ -131,8 +131,31 @@ class Chat extends BaseController
 
     public function pending_count()
     {
-        $count = ChatModel::getUnreadCount();
-        return json(['code' => 0, 'count' => $count]);
+        $unreadUids = ChatModel::getUnreadUidList();
+        $count = count($unreadUids);
+
+        $uids = array_column($unreadUids, 'uid');
+        $users = [];
+        if (!empty($uids)) {
+            $userList = Db::table('fc_user')
+                ->whereIn('id', $uids)
+                ->field('id, username, phone')
+                ->select()
+                ->toArray();
+            foreach ($userList as $u) {
+                $users[] = [
+                    'id' => $u['id'],
+                    'username' => $u['username'],
+                    'phone' => $u['phone'],
+                ];
+            }
+        }
+
+        return json([
+            'code' => 0,
+            'count' => $count,
+            'users' => $users,
+        ]);
     }
 
     public function total_count()

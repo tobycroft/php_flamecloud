@@ -198,14 +198,15 @@ function fetchTicketPending() {
 fetchTicketPending();
 setInterval(fetchTicketPending, 5000);
 
-// 在线客服红点提醒：轮询未读聊天用户数，并提示新消息
-var prevChatCount = 0;
+// 在线客服红点提醒：轮询未读聊天用户列表，并提示新用户
+var prevChatUserIds = [];
 function fetchChatPending() {
     fetch('{:url("chat/pending_count")}')
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res.code === 0) {
                 var count = res.count || 0;
+                var users = res.users || [];
                 var badge = document.getElementById('chatBadge');
                 var floatBadge = document.getElementById('chatFloatBadge');
                 if (count > 0) {
@@ -218,16 +219,25 @@ function fetchChatPending() {
                         floatBadge.textContent = text;
                         floatBadge.classList.remove('hidden');
                     }
-                    // 新消息提示：计数增加时弹出通知
-                    if (prevChatCount > 0 && count > prevChatCount) {
-                        var newCount = count - prevChatCount;
-                        showToast('有 ' + newCount + ' 位用户发来新消息，请及时回复', 'info');
+                    // 找出新用户
+                    var currentIds = users.map(function(u) { return u.id; });
+                    if (prevChatUserIds.length > 0) {
+                        var newUsers = users.filter(function(u) {
+                            return prevChatUserIds.indexOf(u.id) === -1;
+                        });
+                        if (newUsers.length > 0) {
+                            var names = newUsers.map(function(u) {
+                                return u.username || u.phone || '用户' + u.id;
+                            });
+                            showToast('新消息来自：' + names.join('、'), 'info');
+                        }
                     }
+                    prevChatUserIds = currentIds;
                 } else {
                     if (badge) badge.classList.add('hidden');
                     if (floatBadge) floatBadge.classList.add('hidden');
+                    prevChatUserIds = [];
                 }
-                prevChatCount = count;
             }
         })
         .catch(function() {});
