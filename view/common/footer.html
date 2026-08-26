@@ -160,11 +160,11 @@ function closeSidebar() {
 
 function showToast(msg, type) {
     var toast = document.getElementById('toast'), box = document.getElementById('toastBox');
-    var bg = type === 'error' ? 'bg-red-500 text-white' : 'bg-gray-900 text-white';
+    var bg = type === 'error' ? 'bg-red-500 text-white' : type === 'info' ? 'bg-blue-500 text-white' : 'bg-gray-900 text-white';
     box.className = 'px-5 py-3 rounded-lg shadow-lg text-sm font-medium ' + bg;
     box.textContent = msg;
     toast.classList.remove('hidden');
-    setTimeout(function() { toast.classList.add('hidden'); }, 2000);
+    setTimeout(function() { toast.classList.add('hidden'); }, 4000);
 }
 
 renderMenu();
@@ -185,25 +185,37 @@ function fetchTicketPending() {
         .catch(function() {});
 }
 fetchTicketPending();
-setInterval(fetchTicketPending, 15000);
+setInterval(fetchTicketPending, 5000);
 
-// 在线客服红点提醒：轮询未读聊天用户数
+// 在线客服红点提醒：轮询未读聊天用户数，并提示新消息
+var prevChatCount = 0;
 function fetchChatPending() {
     fetch('{:url("chat/pending_count")}')
         .then(function(r) { return r.json(); })
         .then(function(res) {
-            if (res.code === 0 && res.count > 0) {
+            if (res.code === 0) {
+                var count = res.count || 0;
                 var badge = document.getElementById('chatBadge');
-                if (badge) {
-                    badge.textContent = res.count > 99 ? '99+' : res.count;
-                    badge.classList.remove('hidden');
+                if (count > 0) {
+                    if (badge) {
+                        badge.textContent = count > 99 ? '99+' : count;
+                        badge.classList.remove('hidden');
+                    }
+                    // 新消息提示：计数增加时弹出通知
+                    if (prevChatCount > 0 && count > prevChatCount) {
+                        var newCount = count - prevChatCount;
+                        showToast('有 ' + newCount + ' 位用户发来新消息，请及时回复', 'info');
+                    }
+                } else {
+                    if (badge) badge.classList.add('hidden');
                 }
+                prevChatCount = count;
             }
         })
         .catch(function() {});
 }
 fetchChatPending();
-setInterval(fetchChatPending, 15000);
+setInterval(fetchChatPending, 5000);
 
 // 实名认证审核红点提醒：轮询待审核数
 function fetchVerificationPending() {
@@ -221,13 +233,13 @@ function fetchVerificationPending() {
         .catch(function() {});
 }
 fetchVerificationPending();
-setInterval(fetchVerificationPending, 15000);
+setInterval(fetchVerificationPending, 5000);
 
 // 空闲超时监控
 (function () {
     var idleTimeoutMinutes = 30;
     var lastActivity = Date.now();
-    var heartbeatInterval = 15000;
+    var heartbeatInterval = 5000;
     var checkInterval = 10000;
     var warningShown = false;
     var warningTimer = null;
