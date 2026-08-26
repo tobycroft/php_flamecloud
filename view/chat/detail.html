@@ -83,7 +83,7 @@
                             <div class="text-xs mb-1 {if $msg['is_admin'] == 0}text-left text-blue-600{else}text-right text-orange-600{/if}">
                                 {if $msg['is_admin'] == 0}{$username}{else}{$admin_name}{/if}
                             </div>
-                            <div class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap text-left {if $msg['is_admin'] == 0}bg-gray-100 text-gray-900 rounded-bl-md{else}bg-orange-500 text-white rounded-br-md{/if}">
+                            <div class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed text-left {if $msg['is_admin'] == 0}bg-gray-100 text-gray-900 rounded-bl-md{else}bg-orange-500 text-white rounded-br-md{/if}">
                                 {:htmlspecialchars((string)$msg['content'])}
                             </div>
                             <div class="text-xs text-gray-400 mt-1 flex items-center gap-1 {if $msg['is_admin'] == 0}justify-start{else}justify-end{/if}">
