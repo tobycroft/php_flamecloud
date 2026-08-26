@@ -64,14 +64,18 @@ class ChatModel extends Model
             ->toArray();
     }
 
-    public static function insertMessage(int $uid, string $content, int $is_admin): int
+    public static function insertMessage(int $uid, string $content, int $is_admin, string $adminName = ''): int
     {
+        $data = [
+            'uid'      => $uid,
+            'content'  => $content,
+            'is_admin' => $is_admin,
+        ];
+        if ($is_admin === 1 && $adminName !== '') {
+            $data['admin_name'] = $adminName;
+        }
         return Db::table('fc_chat')
-            ->insertGetId([
-                'uid'      => $uid,
-                'content'  => $content,
-                'is_admin' => $is_admin,
-            ]);
+            ->insertGetId($data);
     }
 
     public static function markRead(int $uid): bool

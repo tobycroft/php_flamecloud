@@ -125,7 +125,7 @@ class Chat extends BaseController
             return json(['code' => 400, 'echo' => '缺少参数']);
         }
 
-        $id = ChatModel::insertMessage($uid, $content, 1);
+        $id = ChatModel::insertMessage($uid, $content, 1, (string) Session::get('admin_name', ''));
         if ($id <= 0) {
             return json(['code' => 500, 'echo' => '发送失败']);
         }
