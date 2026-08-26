@@ -17,6 +17,36 @@ class AdminLogOperationModel extends Model
 
     protected $updateTime = false;
 
+    /**
+     * 日志快捷方法
+     * 支持两种调用方式：
+     *   AdminLogOperationModel::log($adminId, $typeCode, $detail)
+     *   AdminLogOperationModel::log($metaArray, $typeCode, $targetId, $detail)
+     */
+    public static function log($meta, string $typeCode, $targetOrDetail = '', string $detail = ''): void
+    {
+        if (is_array($meta)) {
+            // 方式二：传入元数据数组
+            self::record(array_merge($meta, [
+                'type_code'   => $typeCode,
+                'action'      => $typeCode,
+                'target_id'   => is_numeric($targetOrDetail) ? (int) $targetOrDetail : 0,
+                'detail'      => $detail ?: (string) $targetOrDetail,
+            ]));
+        } else {
+            // 方式一：直接传入 admin_id
+            self::record([
+                'admin_id'   => (int) $meta,
+                'admin_name' => (string) session('admin_name', ''),
+                'type_code'  => $typeCode,
+                'action'     => $typeCode,
+                'detail'     => $targetOrDetail ?: $detail,
+                'ip'         => request()->ip(),
+                'user_agent' => mb_substr((string) request()->header('user-agent', ''), 0, 255),
+            ]);
+        }
+    }
+
     public static function record(array $data): void
     {
         self::create([
