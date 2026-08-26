@@ -7,8 +7,8 @@ use app\BaseController;
 use app\model\AdminUserModel;
 use app\model\AdminUserSettingModel;
 use app\model\AdminLogLoginModel;
-use app\model\SystemParamModel;
 use think\App;
+use think\facade\Db;
 use think\facade\Session;
 use think\facade\View;
 use Tobycroft\AossSdk\Captcha;
@@ -121,8 +121,14 @@ class Auth extends BaseController
         $adminName = (string) Session::get('admin_name', '管理员');
         $now = time();
 
-        // 更新客服在线时间戳（供前端判断客服是否在线）
-        SystemParamModel::setValByKey('kf_last_ping', (string) $now);
+        // 更新管理员在线状态
+        Db::table('fc_admin_online')
+            ->replace(true)
+            ->insert([
+                'admin_id'       => (int) $adminId,
+                'admin_name'     => $adminName,
+                'last_heartbeat' => $now,
+            ]);
 
         $idleTimeout = AdminUserSettingModel::getIdleTimeout((int) $adminId);
 
