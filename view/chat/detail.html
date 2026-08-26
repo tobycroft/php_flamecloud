@@ -15,51 +15,101 @@
         <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-        <a href="{:url('chat/index')}" class="mr-3 text-gray-400 hover:text-gray-600">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        </a>
-        <h1 id="pageTitle" class="text-lg font-semibold">与 {$username} 的聊天</h1>
+        <h1 id="pageTitle" class="text-lg font-semibold">在线客服</h1>
     </header>
 
-    <main class="flex-1 flex flex-col" style="height: calc(100vh - 4rem);">
-        <div class="flex-1 overflow-y-auto p-6" id="chatContainer">
-            {if empty($messages)}
-            <div class="text-center py-12 text-gray-400">暂无消息</div>
-            {else /}
-            <div class="space-y-4 max-w-3xl mx-auto">
-                {foreach $messages as $msg}
-                <div class="flex gap-3 {if $msg['is_admin'] == 0}justify-end{else}justify-start{/if}">
-                    {if $msg['is_admin'] == 1}
-                    <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    </div>
-                    {/if}
-                    <div class="max-w-[70%]">
-                        <div class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap {if $msg['is_admin'] == 0}bg-blue-500 text-white rounded-br-md{else}bg-gray-100 text-gray-900 rounded-bl-md{/if}">
-                            {:htmlspecialchars((string)$msg['content'])}
-                        </div>
-                        <div class="text-xs text-gray-400 mt-1 flex items-center gap-1 {if $msg['is_admin'] == 0}justify-end{else}justify-start{/if}">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            {$msg['created_at']}
-                        </div>
-                    </div>
-                    {if $msg['is_admin'] == 0}
-                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                    </div>
-                    {/if}
-                </div>
-                {/foreach}
+    <main class="flex-1 flex" style="height: calc(100vh - 4rem);">
+        <!-- 左侧用户列表 -->
+        <div class="w-72 flex-shrink-0 bg-white border-r border-gray-200 overflow-y-auto hidden lg:block" id="userListSidebar">
+            <div class="p-3 border-b border-gray-100">
+                <input type="text" id="userSearch" placeholder="搜索用户..." class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500" oninput="filterUserList(this.value)">
             </div>
-            {/if}
+            <div id="userListContainer">
+                {if empty($chatUsers)}
+                <div class="p-6 text-center text-gray-400 text-sm">暂无聊天记录</div>
+                {else /}
+                {foreach $chatUsers as $u}
+                <a href="{:url('chat/detail', ['uid' => $u['uid']])}" class="flex items-center gap-3 px-4 py-3 transition-colors {if $u['uid'] == $uid}bg-orange-50 border-l-2 border-orange-500{else}hover:bg-gray-50 border-l-2 border-transparent{/if}">
+                    <div class="relative flex-shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold text-xs">
+                            {:mb_substr((string)$u['username'], 0, 1)}
+                        </div>
+                        {if $u['has_unread']}
+                        <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                        {/if}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm font-medium text-gray-900 truncate">{$u['username']}</div>
+                            <span class="text-xs text-gray-400 flex-shrink-0 ml-1">{$u['last_time']}</span>
+                        </div>
+                        <div class="text-xs text-gray-500 truncate mt-0.5">{$u['last_msg']}</div>
+                    </div>
+                </a>
+                {/foreach}
+                {/if}
+            </div>
         </div>
 
-        <div class="bg-white border-t border-gray-200 px-6 py-4">
-            <div class="max-w-3xl mx-auto flex items-end gap-3">
-                <textarea id="replyContent" rows="2" placeholder="输入回复内容..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
-                <button onclick="sendReply()" class="flex-shrink-0 px-5 py-2.5 rounded-full bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors">
-                    发送
-                </button>
+        <!-- 右侧聊天区域 -->
+        <div class="flex-1 flex flex-col">
+            <!-- 当前聊天用户信息 -->
+            <div class="px-6 py-3 bg-white border-b border-gray-100 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold text-sm">
+                    {:mb_substr((string)$username, 0, 1)}
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-gray-900">{$username}</div>
+                    {if !empty($phone)}
+                    <div class="text-xs text-gray-400">{$phone}</div>
+                    {/if}
+                </div>
+            </div>
+
+            <!-- 消息列表 -->
+            <div class="flex-1 overflow-y-auto p-6" id="chatContainer">
+                {if empty($messages)}
+                <div class="text-center py-12 text-gray-400">暂无消息</div>
+                {else /}
+                <div class="space-y-4 max-w-3xl mx-auto">
+                    {foreach $messages as $msg}
+                    <div class="flex gap-3 {if $msg['is_admin'] == 0}justify-start{else}justify-end{/if}">
+                        {if $msg['is_admin'] == 0}
+                        <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        {/if}
+                        <div class="max-w-[70%]">
+                            <div class="text-xs mb-1 {if $msg['is_admin'] == 0}text-blue-600{else}text-orange-600{/if}">
+                                {if $msg['is_admin'] == 0}{$username}{else}{$admin_name}{/if}
+                            </div>
+                            <div class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap {if $msg['is_admin'] == 0}bg-gray-100 text-gray-900 rounded-bl-md{else}bg-orange-500 text-white rounded-br-md{/if}">
+                                {:htmlspecialchars((string)$msg['content'])}
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1 flex items-center gap-1 {if $msg['is_admin'] == 0}justify-start{else}justify-end{/if}">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                {$msg['created_at']}
+                            </div>
+                        </div>
+                        {if $msg['is_admin'] == 1}
+                        <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        </div>
+                        {/if}
+                    </div>
+                    {/foreach}
+                </div>
+                {/if}
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="bg-white border-t border-gray-200 px-6 py-4">
+                <div class="max-w-3xl mx-auto flex items-end gap-3">
+                    <textarea id="replyContent" rows="2" placeholder="输入回复内容..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+                    <button onclick="sendReply()" class="flex-shrink-0 px-5 py-2.5 rounded-full bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors">
+                        发送
+                    </button>
+                </div>
             </div>
         </div>
     </main>
@@ -69,11 +119,13 @@
 var uid = {$uid};
 var lastId = 0;
 var pollTimer = null;
+var detailUrl = '{:url("chat/detail")}';
+var listUrl = '{:url("chat/list_data")}';
 
 // 初始化 lastId
 (function() {
-    var msgs = document.querySelectorAll('#chatContainer .space-y-4 > div');
-    if (msgs.length > 0) {
+    var container = document.querySelector('#chatContainer .space-y-4');
+    if (container && container.lastElementChild) {
         lastId = {$messages[count($messages)-1]['id'] ?? 0};
     }
 })();
@@ -109,19 +161,67 @@ function sendReply() {
 }
 
 function pollNewMessages() {
-    fetch('{:url("chat/detail")}' + '?uid=' + uid + '&last_id=' + lastId, {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(res) {
-        if (res.code === 0 && res.data && res.data.length > 0) {
-            location.reload();
-        }
-    })
-    .catch(function() {});
+    fetch(detailUrl + '?uid=' + uid + '&last_id=' + lastId)
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0 && res.data && res.data.length > 0) {
+                location.reload();
+            }
+        })
+        .catch(function() {});
+}
+
+function renderUserList(users) {
+    var container = document.getElementById('userListContainer');
+    if (!users || users.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-gray-400 text-sm">暂无聊天记录</div>';
+        return;
+    }
+    var html = '';
+    var currentUid = uid;
+    users.forEach(function(user) {
+        var active = parseInt(user.uid) === parseInt(currentUid);
+        var unreadDot = user.has_unread ? '<span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>' : '';
+        var firstChar = user.username ? user.username.charAt(0) : '?';
+        html += '<a href="' + detailUrl + '?uid=' + user.uid + '" class="flex items-center gap-3 px-4 py-3 transition-colors ' +
+            (active ? 'bg-orange-50 border-l-2 border-orange-500' : 'hover:bg-gray-50 border-l-2 border-transparent') + '">';
+        html += '<div class="relative flex-shrink-0">';
+        html += '<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-semibold text-xs">' + firstChar + '</div>';
+        html += unreadDot;
+        html += '</div>';
+        html += '<div class="flex-1 min-w-0">';
+        html += '<div class="flex items-center justify-between">';
+        html += '<div class="text-sm font-medium text-gray-900 truncate">' + (user.username || '用户' + user.uid) + '</div>';
+        html += '<span class="text-xs text-gray-400 flex-shrink-0 ml-1">' + (user.last_time || '-') + '</span>';
+        html += '</div>';
+        html += '<div class="text-xs text-gray-500 truncate mt-0.5">' + (user.last_msg || '') + '</div>';
+        html += '</div></a>';
+    });
+    container.innerHTML = html;
+}
+
+function fetchUserList() {
+    fetch(listUrl)
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.code === 0) {
+                renderUserList(res.data);
+            }
+        })
+        .catch(function() {});
+}
+
+function filterUserList(query) {
+    var items = document.querySelectorAll('#userListContainer a');
+    query = query.toLowerCase();
+    items.forEach(function(item) {
+        var text = item.textContent.toLowerCase();
+        item.style.display = text.indexOf(query) > -1 ? '' : 'none';
+    });
 }
 
 pollTimer = setInterval(pollNewMessages, 5000);
+setInterval(fetchUserList, 5000);
 
 document.getElementById('replyContent').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {

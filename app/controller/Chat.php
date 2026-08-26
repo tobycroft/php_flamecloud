@@ -92,16 +92,26 @@ class Chat extends BaseController
 
         ChatModel::markRead($uid);
 
+        // AJAX 轮询：返回新消息
+        $lastId = (int) input('get.last_id');
+        if ($lastId > 0) {
+            $newMessages = ChatModel::getListByUidAfter($uid, $lastId);
+            return json(['code' => 0, 'data' => $newMessages]);
+        }
+
         $userInfo = Db::table('fc_user')
             ->where('id', $uid)
             ->field('id, username, phone')
             ->find();
 
         $messages = ChatModel::getListByUid($uid);
+        $chatUsers = $this->getChatListData();
 
         View::assign('uid', $uid);
         View::assign('username', $userInfo['username'] ?? ('用户' . $uid));
+        View::assign('phone', $userInfo['phone'] ?? '');
         View::assign('messages', $messages);
+        View::assign('chatUsers', $chatUsers);
         View::assign('admin_name', Session::get('admin_name', '管理员'));
         View::assign('admin_username', Session::get('admin_username', ''));
         return View::fetch();

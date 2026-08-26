@@ -54,6 +54,16 @@ class ChatModel extends Model
             ->toArray();
     }
 
+    public static function getListByUidAfter(int $uid, int $lastId): array
+    {
+        return Db::table('fc_chat')
+            ->where('uid', $uid)
+            ->where('id', '>', $lastId)
+            ->order('id', 'asc')
+            ->select()
+            ->toArray();
+    }
+
     public static function insertMessage(int $uid, string $content, int $is_admin): int
     {
         return Db::table('fc_chat')
