@@ -29,4 +29,21 @@ class SystemParamModel extends Model
         $row->value = $value;
         return (bool) $row->save();
     }
+
+    /**
+     * 按 key 设置值，不存在则创建
+     */
+    public static function setValByKey(string $key, string $value): bool
+    {
+        $row = self::where('key', $key)->find();
+        if ($row) {
+            $row->value = $value;
+            return (bool) $row->save();
+        } else {
+            $self = new self();
+            $self->key = $key;
+            $self->value = $value;
+            return (bool) $self->save();
+        }
+    }
 }
