@@ -80,7 +80,7 @@
                         </div>
                         {/if}
                         <div class="max-w-[70%]">
-                            <div class="text-xs mb-1 {if $msg['is_admin'] == 0}text-blue-600{else}text-orange-600{/if}">
+                            <div class="text-xs mb-1 {if $msg['is_admin'] == 0}text-blue-600{else}text-orange-600 text-right{/if}">
                                 {if $msg['is_admin'] == 0}{$username}{else}{$admin_name}{/if}
                             </div>
                             <div class="px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap {if $msg['is_admin'] == 0}bg-gray-100 text-gray-900 rounded-bl-md{else}bg-orange-500 text-white rounded-br-md{/if}">
