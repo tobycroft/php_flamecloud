@@ -3,13 +3,12 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
 use think\facade\Db;
 
 /**
- * 客服在线状态（公开接口，无需登录）
+ * 客服在线状态（公开接口，无需登录，含 CORS 跨域头）
  */
-class ChatOnline extends BaseController
+class ChatOnline extends \CommonController
 {
     /**
      * 检查客服是否在线
