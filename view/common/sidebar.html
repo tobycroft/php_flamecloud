@@ -26,8 +26,9 @@
                 <div class="text-sm font-medium truncate">{$admin_name}</div>
                 <div class="text-xs text-gray-400 truncate">@{$admin_username}</div>
             </div>
-            <a href="{:url('auth/logout')}" class="text-gray-400 hover:text-red-500 transition-colors" title="退出登录">
+            <a href="{:url('auth/logout')}" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1" title="退出登录">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 16l-4-4m0 0l4-4m-4 4h14"/></svg>
+                <span class="text-xs">登出</span>
             </a>
         </div>
     </div>

@@ -249,6 +249,12 @@ function showToast(msg, type) {
 
 renderMenu();
 
+// 客服按钮权限检查：没有在线客服权限时隐藏
+if (!hasPermission('chat')) {
+    var chatBtn = document.getElementById('chatFloatBtn');
+    if (chatBtn) chatBtn.classList.add('hidden');
+}
+
 // 工单红点提醒：轮询待回复工单数
 function fetchTicketPending() {
     fetch('{:url("ticket/pending_count")}')
