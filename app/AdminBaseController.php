@@ -49,13 +49,13 @@ abstract class AdminBaseController extends BaseController
     {
         parent::initialize();
 
-        $adminId = Session::get('admin_id');
-        if (empty($adminId)) {
+        $adminId = (int) Session::get('admin_id');
+        if ($adminId <= 0) {
             return;
         }
 
         // admin_id=1 始终为超级管理员，跳过权限校验
-        if ((int) $adminId === 1) {
+        if ($adminId === 1) {
             $isSuper = true;
             Session::set('admin_is_super', $isSuper);
             View::assign([
