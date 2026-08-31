@@ -43,16 +43,6 @@ class AdminAuth
         // ========== 权限校验 ==========
         $adminIdInt = (int) $adminId;
 
-        // admin_id=1 始终为超级管理员，全部放行
-        if ($adminIdInt === 1) {
-            // 注入全权限数据到视图
-            View::assign([
-                'is_super'    => true,
-                'permissions' => array_keys(AdminBaseController::$permissionMap),
-            ]);
-            return $next($request);
-        }
-
         // 每次都从数据库拉取，避免 session 缓存过时数据
         $isSuper = AdminUserModel::isSuper($adminIdInt);
         $permissions = $isSuper ? array_keys(AdminBaseController::$permissionMap) : AdminUserModel::getPermissions($adminIdInt);
@@ -61,11 +51,7 @@ class AdminAuth
         Session::set('admin_is_super', $isSuper);
         Session::set('admin_permissions', $permissions);
 
-        // 注入权限数据到视图（供侧边栏渲染）
-        View::assign([
-            'is_super'    => $isSuper,
-            'permissions' => $permissions,
-        ]);
+        // 注入视图变量由 AdminBaseController->initialize() 完成，此处不重复注入
 
         // 超级管理员全部放行
         if ($isSuper) {

@@ -127,8 +127,12 @@ abstract class AdminBaseController extends BaseController
         Session::set('admin_permissions', $permissions);
 
         View::assign([
-            'is_super'    => $isSuper,
-            'permissions' => $permissions,
+            'is_super'          => $isSuper,
+            'permissions'       => $permissions,
+            'admin_name'        => Session::get('admin_name', ''),
+            'admin_username'    => Session::get('admin_username', ''),
+            'admin_id'          => $adminId,
+            'controller_parent' => self::$controllerParent,
         ]);
     }
 }
