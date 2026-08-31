@@ -191,7 +191,7 @@ function renderMenu() {
                 return;
             }
             var parentActive = isParentActive(visibleChildren);
-            var open = isExpanded(menu.title) || parentActive;
+            var open = isExpanded(menu.title);
             html += '<div class="mb-0.5">';
             html += '<div onclick="toggleMenu(\'' + menu.title + '\')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ' +
                 (parentActive ? 'text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">';
