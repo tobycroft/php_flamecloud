@@ -19,13 +19,15 @@
 
     <div class="border-t border-gray-100 px-4 py-3 shrink-0">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold text-sm">
-                {$admin_name_initial}
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium truncate">{$admin_name}</div>
-                <div class="text-xs text-gray-400 truncate">@{$admin_username}</div>
-            </div>
+            <a href="{:url('admin_setting/index')}" class="flex items-center gap-3 flex-1 min-w-0 rounded-lg hover:bg-gray-50 px-1.5 py-1 transition-colors" title="个人设置">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold text-sm shrink-0">
+                    {$admin_name_initial}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium truncate">{$admin_name}</div>
+                    <div class="text-xs text-gray-400 truncate">@{$admin_username}</div>
+                </div>
+            </a>
             <a href="{:url('auth/logout')}" class="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-1" title="退出登录">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 16l-4-4m0 0l4-4m-4 4h14"/></svg>
                 <span class="text-xs">登出</span>
