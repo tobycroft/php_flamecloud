@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\AdminBaseController;
 use app\model\UserBalanceModel;
+use app\model\FcUserBalanceModel;
 use think\facade\Session;
 use think\facade\View;
 
