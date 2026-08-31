@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - ECS实例管理</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">ECS实例管理</h1>
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <form method="get" action="{:url('ecs_instance/index')}" class="flex items-center gap-2">
+                        <input type="text" name="keyword" value="{$keyword}" placeholder="搜索实例ID/名称/UID"
+                            class="px-4 py-2 w-48 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                        <select name="status" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500">
+                            <option value="">全部状态</option>
+                            <option value="running" {if $status === 'running'}selected{/if}>运行中</option>
+                            <option value="stopped" {if $status === 'stopped'}selected{/if}>已停止</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
+                        {if $keyword !== '' || $status !== ''}
+                        <a href="{:url('ecs_instance/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
+                        {/if}
+                    </form>
+                </div>
+                <div class="flex items-center gap-4 text-sm">
+                    <span class="text-gray-500">运行中: <span class="font-semibold text-green-600">{$status_cnt.running}</span></span>
+                    <span class="text-gray-500">已停止: <span class="font-semibold text-gray-600">{$status_cnt.stopped}</span></span>
+                    <span class="text-gray-500">共 <span class="font-semibold text-gray-900">{$total}</span> 条记录</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">实例ID</th>
+                            <th class="px-5 py-3 text-left font-medium">UID</th>
+                            <th class="px-5 py-3 text-left font-medium">名称</th>
+                            <th class="px-5 py-3 text-left font-medium">状态</th>
+                            <th class="px-5 py-3 text-left font-medium">配置</th>
+                            <th class="px-5 py-3 text-left font-medium">地域</th>
+                            <th class="px-5 py-3 text-left font-medium">IP</th>
+                            <th class="px-5 py-3 text-left font-medium">备注</th>
+                            <th class="px-5 py-3 text-left font-medium">创建时间</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {if empty($list)}
+                        <tr>
+                            <td colspan="9" class="px-5 py-12 text-center text-gray-400">暂无数据</td>
+                        </tr>
+                        {else}
+                        {foreach $list as $v}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-5 py-4 font-mono text-xs">{$v.instance_id}</td>
+                            <td class="px-5 py-4">{$v.uid}</td>
+                            <td class="px-5 py-4 font-medium">{$v.instance_name}</td>
+                            <td class="px-5 py-4">
+                                {if $v.status === 'running'}
+                                <span class="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">运行中</span>
+                                {else}
+                                <span class="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500">已停止</span>
+                                {/if}
+                            </td>
+                            <td class="px-5 py-4">{$v.cpu ?? '-'} / {$v.memory ?? '-'}</td>
+                            <td class="px-5 py-4">{$v.region ?? '-'}</td>
+                            <td class="px-5 py-4 font-mono text-xs">{$v.public_ip ?? $v.private_ip ?? '-'}</td>
+                            <td class="px-5 py-4 text-gray-500">{$v.remark ?? '-'}</td>
+                            <td class="px-5 py-4 text-gray-500">{$v.created_at ?? '-'}</td>
+                        </tr>
+                        {/foreach}
+                        {/if}
+                    </tbody>
+                </table>
+            </div>
+
+            {if $totalPage > 1}
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between text-sm">
+                <span class="text-gray-500">第 {$page} / {$totalPage} 页</span>
+                <div class="flex items-center gap-2">
+                    <a href="{$p_query}page=1" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == 1}text-gray-300 pointer-events-none{else}text-gray-600{/if}">首页</a>
+                    <a href="{$p_query}page={$page-1}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == 1}text-gray-300 pointer-events-none{else}text-gray-600{/if}">上一页</a>
+                    {for $i = $p_start; $i <= $p_end; $i++}
+                    <a href="{$p_query}page={$i}" class="px-3 py-1.5 rounded border {if $i == $page}bg-orange-500 text-white border-orange-500{else}border-gray-200 text-gray-600 hover:bg-gray-50{/if}">{$i}</a>
+                    {/for}
+                    <a href="{$p_query}page={$page+1}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == $totalPage}text-gray-300 pointer-events-none{else}text-gray-600{/if}">下一页</a>
+                    <a href="{$p_query}page={$totalPage}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == $totalPage}text-gray-300 pointer-events-none{else}text-gray-600{/if}">末页</a>
+                </div>
+            </div>
+            {/if}
+        </div>
+    </main>
+</div>
+
+{include file="common/footer" /}
+</body>
+</html>

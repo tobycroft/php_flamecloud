@@ -87,4 +87,12 @@ Route::group(function () {
     Route::get('chat/pending_count', 'chat/pending_count');
     Route::get('chat/total_count', 'chat/total_count');
     Route::get('chat/list_data', 'chat/list_data');
+
+    // ECS实例管理
+    Route::get('ecs_instance', 'ecs_instance/index');
+    Route::get('ecs_instance/index', 'ecs_instance/index');
+
+    // ECS订单管理
+    Route::get('ecs_order', 'ecs_order/index');
+    Route::get('ecs_order/index', 'ecs_order/index');
 });
