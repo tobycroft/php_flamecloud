@@ -23,6 +23,8 @@ Route::group(function () {
 
     Route::get('user', 'user/index');
     Route::get('user/index', 'user/index');
+    Route::get('user/edit', 'user/edit');
+    Route::post('user/edit', 'user/edit');
     Route::post('user/status', 'user/status');
 
     Route::get('admin_log', 'adminLog/index');
