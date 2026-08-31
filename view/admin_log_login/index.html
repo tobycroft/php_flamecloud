@@ -20,20 +20,26 @@
 
     <main class="flex-1 p-6">
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
-                <form method="get" action="{:url('admin_log_login/index')}" class="flex items-center gap-2 flex-wrap">
-                    <select name="status" class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
-                        <option value="">全部状态</option>
-                        <option value="1" {$status === '1' ? 'selected' : ''}>成功</option>
-                        <option value="0" {$status === '0' ? 'selected' : ''}>失败</option>
-                    </select>
-                    <input type="text" name="keyword" value="{$keyword}" placeholder="搜索用户名"
-                        class="px-4 py-2 w-48 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
-                    <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
-                    {if $status !== '' || $keyword !== ''}
-                    <a href="{:url('admin_log_login/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
-                    {/if}
-                </form>
+            <div class="px-5 py-4 border-b border-gray-100">
+                <div class="flex flex-wrap items-center gap-3 justify-between">
+                    <div class="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                        <a href="{:url('admin_log_login/index', ['status' => '1'] + (isset($keyword) && $keyword !== '' ? ['keyword' => $keyword] : []))}"
+                           class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {php}echo (\$status === '1' || \$status === '') ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700';{/php}">成功</a>
+                        <a href="{:url('admin_log_login/index', ['status' => '0'] + (isset($keyword) && $keyword !== '' ? ['keyword' => $keyword] : []))}"
+                           class="px-4 py-1.5 rounded-md text-sm font-medium transition-colors {php}echo \$status === '0' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700';{/php}">失败</a>
+                    </div>
+                    <form method="get" action="{:url('admin_log_login/index')}" class="flex items-center gap-2 flex-wrap">
+                        {if $status !== ''}
+                        <input type="hidden" name="status" value="{$status}" />
+                        {/if}
+                        <input type="text" name="keyword" value="{$keyword}" placeholder="搜索用户名"
+                            class="px-4 py-2 w-48 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                        <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
+                        {if $keyword !== ''}
+                        <a href="{:url('admin_log_login/index', $status !== '' ? ['status' => $status] : [])}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
+                        {/if}
+                    </form>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -43,6 +49,7 @@
                             <th class="px-5 py-3 text-left font-medium">ID</th>
                             <th class="px-5 py-3 text-left font-medium">用户名</th>
                             <th class="px-5 py-3 text-left font-medium">状态</th>
+                            <th class="px-5 py-3 text-left font-medium">详细原因</th>
                             <th class="px-5 py-3 text-left font-medium">IP</th>
                             <th class="px-5 py-3 text-left font-medium">登录时间</th>
                         </tr>
@@ -50,7 +57,7 @@
                     <tbody class="divide-y divide-gray-100">
                         {if empty($list)}
                         <tr>
-                            <td colspan="5" class="px-5 py-16 text-center text-gray-400">暂无登录日志</td>
+                            <td colspan="6" class="px-5 py-16 text-center text-gray-400">暂无登录日志</td>
                         </tr>
                         {else /}
                         {foreach $list as $item}
@@ -69,6 +76,13 @@
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-600">成功</span>
                                 {else /}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">失败</span>
+                                {/if}
+                            </td>
+                            <td class="px-5 py-3.5 text-xs">
+                                {if (int)$item['status'] === 1}
+                                <span class="text-green-600">{$item.reason}</span>
+                                {else /}
+                                <span class="text-red-500">{$item.reason}</span>
                                 {/if}
                             </td>
                             <td class="px-5 py-3.5 text-gray-500 font-mono text-xs">{$item.ip}</td>

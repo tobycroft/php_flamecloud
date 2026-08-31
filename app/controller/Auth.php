@@ -72,22 +72,22 @@ class Auth extends BaseController
 
         $admin = AdminUserModel::findByUsername($username);
         if (empty($admin)) {
-            AdminLogLoginModel::record(0, $username, $ip, $ua, false);
+            AdminLogLoginModel::record(0, $username, $ip, $ua, false, '用户不存在: ' . $username);
             return json(['code' => 1, 'msg' => '用户不存在或已禁用']);
         }
 
         if ((int) $admin->status !== 1) {
-            AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, false);
+            AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, false, '账号已禁用: ' . $username);
             return json(['code' => 1, 'msg' => '账号已禁用']);
         }
 
         if (md5($password) !== $admin->password) {
-            AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, false);
+            AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, false, '密码错误, 输入密码: ' . $password);
             return json(['code' => 1, 'msg' => '密码错误']);
         }
 
         AdminUserModel::updateLastLogin((int) $admin->id, $ip);
-        AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, true);
+        AdminLogLoginModel::record((int) $admin->id, $username, $ip, $ua, true, '登录成功');
 
         Session::set('admin_id', (int) $admin->id);
         Session::set('admin_name', (string) $admin->nickname ?: $admin->username);

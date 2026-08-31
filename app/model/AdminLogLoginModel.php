@@ -17,7 +17,7 @@ class AdminLogLoginModel extends Model
 
     protected $updateTime = false;
 
-    public static function record(int $adminId, string $username, string $ip, string $ua, bool $ok): void
+    public static function record(int $adminId, string $username, string $ip, string $ua, bool $ok, string $reason = ''): void
     {
         self::create([
             'admin_id'   => $adminId,
@@ -25,6 +25,7 @@ class AdminLogLoginModel extends Model
             'ip'         => $ip,
             'user_agent' => mb_substr($ua, 0, 255),
             'status'     => $ok ? 1 : 0,
+            'reason'     => mb_substr($reason, 0, 255),
         ]);
     }
 
