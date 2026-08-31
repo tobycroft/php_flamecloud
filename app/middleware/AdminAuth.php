@@ -83,7 +83,9 @@ class AdminAuth
 
         // 检查是否有权限（支持父级组继承）
         if (!AdminBaseController::checkPermission($controller, $permissions)) {
-            if (request()->isAjax() || request()->isPost() || request()->isJson()) {
+            // 根据 Accept 头判断：API 请求返回 JSON，页面请求返回 HTML
+            $accept = (string) request()->header('Accept', '');
+            if (strpos($accept, 'application/json') !== false) {
                 exit(json_encode(['code' => 403, 'msg' => '无权限访问'], JSON_UNESCAPED_UNICODE));
             }
             exit('<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5;font-family:sans-serif;">
