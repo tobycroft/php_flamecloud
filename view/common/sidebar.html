@@ -17,6 +17,7 @@ if ($adminIdInt === 1) {
 }
     var ADMIN_PERMISSIONS = {json_encode($js_permissions)};
     var ADMIN_IS_SUPER = {json_encode($js_is_super)};
+    console.log('[Sidebar Debug]', 'ADMIN_IS_SUPER:', ADMIN_IS_SUPER, 'ADMIN_PERMISSIONS:', ADMIN_PERMISSIONS, 'adminId:', '{:think\facade\Session::get("admin_id")}');
 </script>
 
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
