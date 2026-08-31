@@ -79,17 +79,16 @@
                                 <span class="font-medium text-gray-900">{$item.uid}</span>
                             </td>
                             <td class="px-5 py-3.5">
-                                {php}$t = $item['type'];{/php}
-                                {if $t == 1}
+                                {if $item.type == 1}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-600">充值</span>
-                                {elseif $t == 2}
+                                {elseif $item.type == 2}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">消费</span>
-                                {elseif $t == 3}
+                                {elseif $item.type == 3}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-blue-50 text-blue-600">退款</span>
-                                {elseif $t == 4}
+                                {elseif $item.type == 4}
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">系统调整</span>
                                 {else /}
-                                <span class="text-gray-500">{$t}</span>
+                                <span class="text-gray-500">{$item.type}</span>
                                 {/if}
                             </td>
                             <td class="px-5 py-3.5">

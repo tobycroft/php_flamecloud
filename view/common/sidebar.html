@@ -1,7 +1,7 @@
 <script>
-    var ADMIN_PERMISSIONS = <?php echo json_encode($permissions); ?>;
-    var ADMIN_IS_SUPER = <?php echo $is_super ? 'true' : 'false'; ?>;
-    var CONTROLLER_PARENT = <?php echo json_encode($controller_parent); ?>;
+    var ADMIN_PERMISSIONS = {$permissions_json};
+    var ADMIN_IS_SUPER = {$is_super_json};
+    var CONTROLLER_PARENT = {$controller_parent_json};
 </script>
 
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
@@ -19,7 +19,7 @@
     <div class="border-t border-gray-100 px-4 py-3 shrink-0">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold text-sm">
-                {:mb_substr((string)$admin_name, 0, 1)}
+                {$admin_name_initial}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium truncate">{$admin_name}</div>

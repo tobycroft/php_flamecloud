@@ -78,8 +78,7 @@
                     <span class="text-gray-400 w-16 flex-shrink-0">附件</span>
                     <div class="flex flex-wrap gap-2">
                         {foreach $attachments as $att}
-                        {php}$isAttImg = preg_match('/\.(jpg|jpeg|gif|png|bmp|webp)$/i', (string)$att['name']);{/php}
-                        {if $isAttImg}
+                        {if $att.is_image}
                         <a href="{$att['url']}" target="_blank" class="block w-16 h-16 border border-gray-200 rounded overflow-hidden">
                             <img src="{$att['url']}" class="w-full h-full object-cover" />
                         </a>
@@ -143,12 +142,10 @@
             </div>
             <div class="px-6 py-4">
                 <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">{:htmlspecialchars((string)$reply['content'])}</div>
-                {php}$replyAtts = $reply_attachments[(int)$reply['id']] ?? [];{/php}
-                {if !empty($replyAtts)}
+                {if !empty($reply_attachments[$reply['id']])}
                 <div class="mt-3 flex flex-wrap gap-2">
-                    {foreach $replyAtts as $ratt}
-                    {php}$isImg = preg_match('/\.(jpg|jpeg|gif|png|bmp|webp)$/i', (string)$ratt['name']);{/php}
-                    {if $isImg}
+                    {foreach $reply_attachments[$reply['id']] as $ratt}
+                    {if $ratt.is_image}
                     <a href="{$ratt['url']}" target="_blank" class="block w-16 h-16 border border-gray-200 rounded overflow-hidden">
                         <img src="{$ratt['url']}" class="w-full h-full object-cover" />
                     </a>

@@ -126,13 +126,19 @@ abstract class AdminBaseController extends BaseController
         Session::set('admin_is_super', $isSuper);
         Session::set('admin_permissions', $permissions);
 
+        $adminName = Session::get('admin_name', '');
+        $adminUsername = Session::get('admin_username', '');
         View::assign([
-            'is_super'          => $isSuper,
-            'permissions'       => $permissions,
-            'admin_name'        => Session::get('admin_name', ''),
-            'admin_username'    => Session::get('admin_username', ''),
-            'admin_id'          => $adminId,
-            'controller_parent' => self::$controllerParent,
+            'is_super'                  => $isSuper,
+            'is_super_json'              => $isSuper ? 'true' : 'false',
+            'permissions'               => $permissions,
+            'permissions_json'           => json_encode($permissions, JSON_UNESCAPED_UNICODE),
+            'admin_name'                => $adminName,
+            'admin_name_initial'         => mb_substr((string) $adminName, 0, 1),
+            'admin_username'            => $adminUsername,
+            'admin_id'                  => $adminId,
+            'controller_parent'         => self::$controllerParent,
+            'controller_parent_json'     => json_encode(self::$controllerParent, JSON_UNESCAPED_UNICODE),
         ]);
     }
 }

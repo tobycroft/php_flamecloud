@@ -111,10 +111,9 @@
                             <span class="text-xs text-gray-500">{$pay_method_map[$order['pay_method']] ?? $order['pay_method']}</span>
                         </td>
                         <td class="px-4 py-3">
-                            {php}$st = $order['status'];{/php}
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded {$status_map[$st]['color'] ?? 'bg-gray-100 text-gray-500'}">
-                                <span class="w-1.5 h-1.5 rounded-full {if $st === 1}bg-green-500{elseif $st === 0}bg-yellow-500{elseif $st === 3}bg-blue-500{else}bg-gray-400{/if}"></span>
-                                {$status_map[$st]['text'] ?? '未知'}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded {$status_map[$order.status]['color'] ?? 'bg-gray-100 text-gray-500'}">
+                                <span class="w-1.5 h-1.5 rounded-full {if $order.status === 1}bg-green-500{elseif $order.status === 0}bg-yellow-500{elseif $order.status === 3}bg-blue-500{else}bg-gray-400{/if}"></span>
+                                {$status_map[$order.status]['text'] ?? '未知'}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs text-gray-500">{$order['created_at']}</td>

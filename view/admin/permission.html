@@ -50,38 +50,25 @@
                     <div id="permissionList" class="space-y-4 {if $is_super}opacity-50 pointer-events-none{/if}">
                         <div class="text-sm font-medium text-gray-700 mb-2">管理范围（选择可访问的菜单）</div>
 
-                        {foreach $permission_groups as $groupName => $children}
-                        <?php
-                        $groupPerm = $groupName;
-                        $allChildrenChecked = true;
-                        $anyChildChecked = false;
-                        foreach ($children as $child) {
-                            if (in_array($child, $permissions) || in_array($groupName, $permissions)) {
-                                $anyChildChecked = true;
-                            } else {
-                                $allChildrenChecked = false;
-                            }
-                        }
-                        ?>
+                        {foreach $groups_data as $group}
                         <div class="border border-gray-200 rounded-lg overflow-hidden">
                             <!-- 父级行 -->
-                            <label class="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors group-perm-label" data-group="{$groupName}">
-                                <input type="checkbox" name="permissions[]" value="{$groupName}" class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 group-checkbox"
-                                    {if $allChildrenChecked}checked{/if}
-                                    onchange="onGroupToggle(this, '{$groupName}')" />
-                                <span class="text-sm font-medium text-gray-800">{$groupName}</span>
+                            <label class="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors group-perm-label" data-group="{$group.name}">
+                                <input type="checkbox" name="permissions[]" value="{$group.name}" class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 group-checkbox"
+                                    {if $group.allChecked}checked{/if}
+                                    onchange="onGroupToggle(this, '{$group.name}')" />
+                                <span class="text-sm font-medium text-gray-800">{$group.name}</span>
                                 <span class="text-xs text-gray-400 ml-auto">勾选父级自动选择所有子权限</span>
                             </label>
                             <!-- 子级列表 -->
                             <div class="px-4 py-2 space-y-1">
-                                {foreach $children as $childKey}
-                                <?php $childName = $permission_map[$childKey] ?? $childKey; ?>
-                                <label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer child-perm-label" data-group="{$groupName}" data-child="{$childKey}">
-                                    <input type="checkbox" name="permissions[]" value="{$childKey}" class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 child-checkbox"
-                                        data-group="{$groupName}"
-                                        {if in_array($childKey, $permissions) || $allChildrenChecked}checked{/if}
-                                        onchange="onChildToggle(this, '{$groupName}')" />
-                                    <span class="text-sm text-gray-600">{$childName}</span>
+                                {foreach $group.children as $child}
+                                <label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer child-perm-label" data-group="{$group.name}" data-child="{$child.key}">
+                                    <input type="checkbox" name="permissions[]" value="{$child.key}" class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 child-checkbox"
+                                        data-group="{$group.name}"
+                                        {if $child.checked}checked{/if}
+                                        onchange="onChildToggle(this, '{$group.name}')" />
+                                    <span class="text-sm text-gray-600">{$child.name}</span>
                                 </label>
                                 {/foreach}
                             </div>

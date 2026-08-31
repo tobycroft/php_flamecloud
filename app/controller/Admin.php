@@ -289,15 +289,42 @@ class Admin extends AdminBaseController
             $permissions = [];
         }
 
+        // 预计算每组的选中状态，避免模板中写 PHP 逻辑
+        $groupsData = [];
+        foreach (AdminBaseController::$permissionGroups as $groupName => $children) {
+            $allChildrenChecked = true;
+            $anyChildChecked = false;
+            $childrenData = [];
+            foreach ($children as $childKey) {
+                $childName = AdminBaseController::$permissionMap[$childKey] ?? $childKey;
+                $childChecked = in_array($childKey, $permissions) || in_array($groupName, $permissions);
+                if ($childChecked) {
+                    $anyChildChecked = true;
+                } else {
+                    $allChildrenChecked = false;
+                }
+                $childrenData[] = [
+                    'key'     => $childKey,
+                    'name'    => $childName,
+                    'checked' => $childChecked,
+                ];
+            }
+            $groupsData[] = [
+                'name'       => $groupName,
+                'allChecked' => $allChildrenChecked,
+                'anyChecked' => $anyChildChecked,
+                'children'   => $childrenData,
+            ];
+        }
+
         View::assign([
-            'id'               => $id,
-            'username'         => $admin->username,
-            'nickname'         => $admin->nickname,
-            'is_super'         => (int) $admin->is_super,
-            'permissions'      => $permissions,
-            'permission_map'   => AdminBaseController::$permissionMap,
-            'permission_groups' => AdminBaseController::$permissionGroups,
-            'admin_name'       => Session::get('admin_name', '管理员'),
+            'id'            => $id,
+            'username'      => $admin->username,
+            'nickname'      => $admin->nickname,
+            'is_super'      => (int) $admin->is_super,
+            'permissions'   => $permissions,
+            'groups_data'   => $groupsData,
+            'admin_name'    => Session::get('admin_name', '管理员'),
         ]);
         return View::fetch('/admin/permission');
     }

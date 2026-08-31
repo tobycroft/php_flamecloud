@@ -153,12 +153,26 @@ class Ticket extends AdminBaseController
 
         $replies     = FcTicketReplyModel::listByTicketId($id);
         $attachments = FcTicketAttachmentModel::listByTicketId($id);
+        // 预计算附件是否图片，避免模板中写 PHP 逻辑
+        $imageExts = ['jpg', 'jpeg', 'gif', 'png', 'bmp', 'webp'];
+        foreach ($attachments as &$att) {
+            $ext = strtolower(pathinfo((string)$att['name'], PATHINFO_EXTENSION));
+            $att['is_image'] = in_array($ext, $imageExts) ? 1 : 0;
+        }
+        unset($att);
         $links       = FcTicketLinkModel::listByTicketId($id);
         $contacts    = FcTicketContactModel::listByTicketId($id);
 
         $replyAttachments = [];
         foreach ($replies as $reply) {
-            $replyAttachments[(int)$reply['id']] = FcTicketAttachmentModel::listByReplyId((int)$reply['id']);
+            $ras = FcTicketAttachmentModel::listByReplyId((int)$reply['id']);
+            // 预计算回复附件是否图片
+            foreach ($ras as &$ra) {
+                $ext = strtolower(pathinfo((string)$ra['name'], PATHINFO_EXTENSION));
+                $ra['is_image'] = in_array($ext, $imageExts) ? 1 : 0;
+            }
+            unset($ra);
+            $replyAttachments[(int)$reply['id']] = $ras;
         }
 
         View::assign([
