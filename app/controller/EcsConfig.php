@@ -537,6 +537,296 @@ class EcsConfig extends AdminBaseController
         return View::fetch('/ecs_config/vpc');
     }
 
+    // ==================== 全局列表（所有地域） ====================
+
+    /**
+     * 获取地域名称映射
+     */
+    private function getRegionMap(): array
+    {
+        $regions = EcsRegionModel::getActiveAll();
+        $map = [];
+        foreach ($regions as $r) {
+            $map[$r['id']] = $r['name'];
+        }
+        return $map;
+    }
+
+    /**
+     * 所有可用区列表（全局）
+     */
+    public function zoneList()
+    {
+        $keyword = trim((string) $this->request->get('keyword', ''));
+        $page    = max(1, (int) $this->request->get('page', 1));
+        $limit   = 15;
+
+        $filters = [];
+        if ($keyword !== '') $filters['keyword'] = $keyword;
+
+        $result    = EcsZoneModel::getList($page, $limit, $filters);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = $keyword !== '' ? '?keyword=' . urlencode($keyword) . '&' : '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'keyword'       => $keyword,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/zone_list');
+    }
+
+    /**
+     * 所有规格列表（全局）
+     */
+    public function specList()
+    {
+        $keyword = trim((string) $this->request->get('keyword', ''));
+        $page    = max(1, (int) $this->request->get('page', 1));
+        $limit   = 15;
+
+        $filters = [];
+        if ($keyword !== '') $filters['keyword'] = $keyword;
+
+        $result    = EcsSpecModel::getList($page, $limit, $filters);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = $keyword !== '' ? '?keyword=' . urlencode($keyword) . '&' : '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'keyword'       => $keyword,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/spec_list');
+    }
+
+    /**
+     * 所有镜像列表（全局）
+     */
+    public function imageList()
+    {
+        $imageType = trim((string) $this->request->get('image_type', ''));
+        $keyword   = trim((string) $this->request->get('keyword', ''));
+        $page      = max(1, (int) $this->request->get('page', 1));
+        $limit     = 15;
+
+        $filters = [];
+        if ($imageType !== '') $filters['image_type'] = $imageType;
+        if ($keyword !== '') $filters['keyword'] = $keyword;
+
+        $result    = EcsImageModel::getList($page, $limit, $filters);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = '?';
+        if ($keyword !== '') $pQuery .= 'keyword=' . urlencode($keyword) . '&';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'keyword'       => $keyword,
+            'image_type'    => $imageType,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/image_list');
+    }
+
+    /**
+     * 所有磁盘列表（全局）
+     */
+    public function diskList()
+    {
+        $diskCategory = trim((string) $this->request->get('disk_category', ''));
+        $page         = max(1, (int) $this->request->get('page', 1));
+        $limit        = 15;
+
+        $filters = [];
+        if ($diskCategory !== '') $filters['disk_category'] = $diskCategory;
+
+        $result    = EcsDiskModel::getList($page, $limit, $filters);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = '?';
+        if ($diskCategory !== '') $pQuery .= 'disk_category=' . urlencode($diskCategory) . '&';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'disk_category' => $diskCategory,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/disk_list');
+    }
+
+    /**
+     * 所有线路列表（全局）
+     */
+    public function lineList()
+    {
+        $page  = max(1, (int) $this->request->get('page', 1));
+        $limit = 15;
+
+        $result    = EcsLineModel::getList($page, $limit, []);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/line_list');
+    }
+
+    /**
+     * 所有带宽列表（全局）
+     */
+    public function bandwidthList()
+    {
+        $page  = max(1, (int) $this->request->get('page', 1));
+        $limit = 15;
+
+        $result    = EcsBandwidthModel::getList($page, $limit, []);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/bandwidth_list');
+    }
+
+    /**
+     * 所有VPC列表（全局）
+     */
+    public function vpcList()
+    {
+        $keyword = trim((string) $this->request->get('keyword', ''));
+        $page    = max(1, (int) $this->request->get('page', 1));
+        $limit   = 15;
+
+        $filters = [];
+        if ($keyword !== '') $filters['keyword'] = $keyword;
+
+        $result    = EcsVpcModel::getList($page, $limit, $filters);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = $keyword !== '' ? '?keyword=' . urlencode($keyword) . '&' : '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        $regionMap = $this->getRegionMap();
+        foreach ($result['list'] as &$v) {
+            $v['region_name'] = $regionMap[$v['region_id']] ?? '-';
+        }
+        unset($v);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'keyword'       => $keyword,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/vpc_list');
+    }
+
     // ==================== 通用CRUD操作 ====================
 
     /**

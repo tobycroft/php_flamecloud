@@ -58,7 +58,14 @@ const menus = [
         title: 'ECS管理',
         icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/></svg>',
         children: [
-            { title: '配置管理', url: '{:url("ecs_config/index")}' },
+            { title: '地域配置', url: '{:url("ecs_config/index")}' },
+            { title: '所有可用区', url: '{:url("ecs_config/zoneList")}' },
+            { title: '所有规格', url: '{:url("ecs_config/specList")}' },
+            { title: '所有镜像', url: '{:url("ecs_config/imageList")}' },
+            { title: '所有磁盘', url: '{:url("ecs_config/diskList")}' },
+            { title: '所有线路', url: '{:url("ecs_config/lineList")}' },
+            { title: '所有带宽', url: '{:url("ecs_config/bandwidthList")}' },
+            { title: '所有VPC', url: '{:url("ecs_config/vpcList")}' },
             { title: '实例列表', url: '{:url("ecs_instance/index")}' },
             { title: '订单列表', url: '{:url("ecs_order/index")}' }
         ]

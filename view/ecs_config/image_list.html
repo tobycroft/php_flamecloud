@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 所有镜像</title>
+    {include file="common/head" /}
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">所有镜像</h1>
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <form method="get" action="{:url('ecs_config/imageList')}" class="flex items-center gap-2">
+                        <input type="text" name="keyword" value="{$keyword}" placeholder="搜索OS/版本"
+                            class="px-4 py-2 w-48 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                        <select name="image_type" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                            <option value="">全部类型</option>
+                            <option value="系统镜像" {if $image_type == '系统镜像'}selected{/if}>系统镜像</option>
+                            <option value="自定义镜像" {if $image_type == '自定义镜像'}selected{/if}>自定义镜像</option>
+                        </select>
+                        <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
+                        {if $keyword !== '' || $image_type !== ''}
+                        <a href="{:url('ecs_config/imageList')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
+                        {/if}
+                    </form>
+                </div>
+                <button onclick="openAddModal()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-orange-500/30 transition-all">
+                    + 新增镜像
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">ID</th>
+                            <th class="px-5 py-3 text-left font-medium">地域</th>
+                            <th class="px-5 py-3 text-left font-medium">镜像类型</th>
+                            <th class="px-5 py-3 text-left font-medium">操作系统</th>
+                            <th class="px-5 py-3 text-left font-medium">版本</th>
+                            <th class="px-5 py-3 text-left font-medium">排序</th>
+                            <th class="px-5 py-3 text-left font-medium">状态</th>
+                            <th class="px-5 py-3 text-left font-medium">创建时间</th>
+                            <th class="px-5 py-3 text-right font-medium">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {if empty($list)}
+                        <tr>
+                            <td colspan="9" class="px-5 py-12 text-center text-gray-400">暂无数据</td>
+                        </tr>
+                        {else}
+                        {foreach $list as $v}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-5 py-3.5 text-gray-500">#{$v.id}</td>
+                            <td class="px-5 py-3.5 text-gray-500">{$v.region_name}</td>
+                            <td class="px-5 py-3.5">
+                                {if $v.image_type == '系统镜像'}
+                                <span class="px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-600">{$v.image_type}</span>
+                                {else}
+                                <span class="px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-600">{$v.image_type}</span>
+                                {/if}
+                            </td>
+                            <td class="px-5 py-3.5 font-medium">{$v.os}</td>
+                            <td class="px-5 py-3.5 text-gray-500">{$v.version}</td>
+                            <td class="px-5 py-3.5 text-gray-500">{$v.sort}</td>
+                            <td class="px-5 py-3.5">
+                                {if $v.status == 1}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-600">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>启用
+                                </span>
+                                {else}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-500">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>禁用
+                                </span>
+                                {/if}
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs">{$v.created_at}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button onclick="openEditModal({$v.id})" class="px-3 py-1.5 text-gray-600 hover:bg-gray-50 rounded-md text-xs transition-colors">编辑</button>
+                                    <button onclick="toggleStatus({$v.id}, {$v.status == 1 ? 0 : 1})" class="px-3 py-1.5 {$v.status == 1 ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'} rounded-md text-xs transition-colors">
+                                        {$v.status == 1 ? '禁用' : '启用'}
+                                    </button>
+                                    <button onclick="confirmDelete({$v.id})" class="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-md text-xs transition-colors">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {/foreach}
+                        {/if}
+                    </tbody>
+                </table>
+            </div>
+
+            {if $totalPage > 1}
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between text-sm">
+                <span class="text-gray-500">第 {$page} / {$totalPage} 页</span>
+                <div class="flex items-center gap-2">
+                    <a href="{$p_query}page=1" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == 1}text-gray-300 pointer-events-none{else}text-gray-600{/if}">首页</a>
+                    <a href="{$p_query}page={$page-1}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == 1}text-gray-300 pointer-events-none{else}text-gray-600{/if}">上一页</a>
+                    {for start="$p_start" end="$p_end" comparison="elt" name="i"}
+                    <a href="{$p_query}page={$i}" class="px-3 py-1.5 rounded border {if $i == $page}bg-orange-500 text-white border-orange-500{else}border-gray-200 text-gray-600 hover:bg-gray-50{/if}">{$i}</a>
+                    {/for}
+                    <a href="{$p_query}page={$page+1}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == $totalPage}text-gray-300 pointer-events-none{else}text-gray-600{/if}">下一页</a>
+                    <a href="{$p_query}page={$totalPage}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == $totalPage}text-gray-300 pointer-events-none{else}text-gray-600{/if}">末页</a>
+                </div>
+            </div>
+            {/if}
+        </div>
+    </main>
+</div>
+
+<!-- 新增镜像模态框 -->
+<div id="modalAdd" class="fixed inset-0 z-50 hidden">
+    <div class="modal-mask absolute inset-0" onclick="closeAddModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold">新增镜像</h3>
+            <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="addForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">地域 <span class="text-red-500">*</span></label>
+                <select id="add_region_id" name="region_id" required
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none">
+                    <option value="">请选择地域</option>
+                    <option value="华东1(杭州)">华东1(杭州)</option>
+                    <option value="华北2(北京)">华北2(北京)</option>
+                    <option value="华南1(广州)">华南1(广州)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">镜像类型 <span class="text-red-500">*</span></label>
+                <select id="add_image_type" name="image_type" required
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none">
+                    <option value="系统镜像">系统镜像</option>
+                    <option value="自定义镜像">自定义镜像</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">操作系统 <span class="text-red-500">*</span></label>
+                <input id="add_os" name="os" type="text" required maxlength="100"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    placeholder="如：CentOS" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">版本 <span class="text-red-500">*</span></label>
+                <input id="add_version" name="version" type="text" required maxlength="100"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    placeholder="如：7.9" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">排序</label>
+                <input id="add_sort" name="sort" type="number" value="0"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeAddModal()" class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">取消</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-orange-500/30 transition-all">确认添加</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 编辑镜像模态框 -->
+<div id="modalEdit" class="fixed inset-0 z-50 hidden">
+    <div class="modal-mask absolute inset-0" onclick="closeEditModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold">编辑镜像</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form id="editForm" class="space-y-4">
+            <input type="hidden" id="edit_id" name="id" />
+            <input type="hidden" name="type" value="image" />
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">地域 <span class="text-red-500">*</span></label>
+                <select id="edit_region_id" name="region_id" required
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none">
+                    <option value="">请选择地域</option>
+                    <option value="华东1(杭州)">华东1(杭州)</option>
+                    <option value="华北2(北京)">华北2(北京)</option>
+                    <option value="华南1(广州)">华南1(广州)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">镜像类型 <span class="text-red-500">*</span></label>
+                <select id="edit_image_type" name="image_type" required
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none">
+                    <option value="系统镜像">系统镜像</option>
+                    <option value="自定义镜像">自定义镜像</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">操作系统 <span class="text-red-500">*</span></label>
+                <input id="edit_os" name="os" type="text" required maxlength="100"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">版本 <span class="text-red-500">*</span></label>
+                <input id="edit_version" name="version" type="text" required maxlength="100"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">排序</label>
+                <input id="edit_sort" name="sort" type="number" value="0"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeEditModal()" class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors">取消</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:shadow-lg hover:shadow-orange-500/30 transition-all">保存修改</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{include file="common/footer" /}
+
+<script>
+function openAddModal() { document.getElementById('modalAdd').classList.remove('hidden'); }
+function closeAddModal() {
+    document.getElementById('modalAdd').classList.add('hidden');
+    document.getElementById('addForm').reset();
+}
+
+function openEditModal(id) {
+    fetch("{:url('ecs_config/itemEdit')}?type=image&id=" + id)
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.code !== 0) { showToast(res.msg || '获取数据失败', 'error'); return; }
+        document.getElementById('edit_id').value = res.data.id;
+        document.getElementById('edit_region_id').value = res.data.region_id;
+        document.getElementById('edit_image_type').value = res.data.image_type;
+        document.getElementById('edit_os').value = res.data.os;
+        document.getElementById('edit_version').value = res.data.version;
+        document.getElementById('edit_sort').value = res.data.sort;
+        document.getElementById('modalEdit').classList.remove('hidden');
+    })
+    .catch(function() { showToast('网络错误，请重试', 'error'); });
+}
+function closeEditModal() {
+    document.getElementById('modalEdit').classList.add('hidden');
+    document.getElementById('editForm').reset();
+}
+
+function toggleStatus(id, status) {
+    var tip = status === 1 ? '确定启用该镜像？' : '确定禁用该镜像？';
+    if (!confirm(tip)) return;
+    var body = new URLSearchParams();
+    body.append('id', id); body.append('status', status); body.append('type', 'image');
+    fetch("{:url('ecs_config/itemStatus')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) setTimeout(function() { location.reload(); }, 600);
+    });
+}
+
+function confirmDelete(id) {
+    if (!confirm('确定删除该镜像？')) return;
+    var body = new URLSearchParams();
+    body.append('id', id); body.append('type', 'image');
+    fetch("{:url('ecs_config/itemDelete')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) setTimeout(function() { location.reload(); }, 600);
+    });
+}
+
+document.getElementById('addForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var body = new URLSearchParams();
+    body.append('type', 'image');
+    body.append('region_id', document.getElementById('add_region_id').value);
+    body.append('image_type', document.getElementById('add_image_type').value);
+    body.append('os', document.getElementById('add_os').value);
+    body.append('version', document.getElementById('add_version').value);
+    body.append('sort', document.getElementById('add_sort').value);
+    fetch("{:url('ecs_config/itemAdd')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) { closeAddModal(); setTimeout(function() { location.reload(); }, 600); }
+    });
+});
+
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var body = new URLSearchParams();
+    body.append('type', 'image');
+    body.append('id', document.getElementById('edit_id').value);
+    body.append('region_id', document.getElementById('edit_region_id').value);
+    body.append('image_type', document.getElementById('edit_image_type').value);
+    body.append('os', document.getElementById('edit_os').value);
+    body.append('version', document.getElementById('edit_version').value);
+    body.append('sort', document.getElementById('edit_sort').value);
+    fetch("{:url('ecs_config/itemEdit')}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+    }).then(function(r) { return r.json(); }).then(function(res) {
+        showToast(res.msg, res.code === 0 ? 'success' : 'error');
+        if (res.code === 0) { closeEditModal(); setTimeout(function() { location.reload(); }, 600); }
+    });
+});
+</script>
+
+</body>
+</html>
