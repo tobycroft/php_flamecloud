@@ -71,10 +71,27 @@ class Chat extends AdminBaseController
     {
         $chatUsers = $this->getChatListData();
 
-        View::assign('chatUsers', $chatUsers);
+        if (!empty($chatUsers)) {
+            // 优先跳转到有未读消息的用户
+            $firstUid = $chatUsers[0]['uid'];
+            foreach ($chatUsers as $u) {
+                if ($u['has_unread']) {
+                    $firstUid = $u['uid'];
+                    break;
+                }
+            }
+            return redirect(url('chat/detail', ['uid' => $firstUid]));
+        }
+
+        // 无聊天记录时，渲染 detail 页面（左侧列表为空）
+        View::assign('uid', 0);
+        View::assign('username', '');
+        View::assign('phone', '');
+        View::assign('messages', []);
+        View::assign('chatUsers', []);
         View::assign('admin_name', Session::get('admin_name', '管理员'));
         View::assign('admin_username', Session::get('admin_username', ''));
-        return View::fetch();
+        return View::fetch('../view/chat/detail.html');
     }
 
     public function list_data()
