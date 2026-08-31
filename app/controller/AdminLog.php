@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\AdminBaseController;
 use app\model\AdminLogOperationModel;
+use app\model\AdminLogTypeModel;
 use think\facade\Session;
 use think\facade\View;
 
