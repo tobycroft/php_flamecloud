@@ -82,7 +82,7 @@ class AdminAuth
         $controller = strtolower(request()->controller());
 
         // 允许访问的控制器（无需权限）
-        $allowControllers = ['auth'];
+        $allowControllers = ['auth', 'index'];
         if (in_array($controller, $allowControllers)) {
             return $next($request);
         }
