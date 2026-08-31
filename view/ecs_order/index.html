@@ -95,7 +95,7 @@
                 <div class="flex items-center gap-2">
                     <a href="{$p_query}page=1" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == 1}text-gray-300 pointer-events-none{else}text-gray-600{/if}">首页</a>
                     <a href="{$p_query}page={$page-1}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == 1}text-gray-300 pointer-events-none{else}text-gray-600{/if}">上一页</a>
-                    {for $i = $p_start; $i <= $p_end; $i++}
+                    {for start="$p_start" end="$p_end" comparison="elt" name="i"}
                     <a href="{$p_query}page={$i}" class="px-3 py-1.5 rounded border {if $i == $page}bg-orange-500 text-white border-orange-500{else}border-gray-200 text-gray-600 hover:bg-gray-50{/if}">{$i}</a>
                     {/for}
                     <a href="{$p_query}page={$page+1}" class="px-3 py-1.5 rounded border border-gray-200 hover:bg-gray-50 {if $page == $totalPage}text-gray-300 pointer-events-none{else}text-gray-600{/if}">下一页</a>
