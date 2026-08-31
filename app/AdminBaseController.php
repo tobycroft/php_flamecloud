@@ -54,6 +54,17 @@ abstract class AdminBaseController extends BaseController
             return;
         }
 
+        // admin_id=1 始终为超级管理员，跳过权限校验
+        if ((int) $adminId === 1) {
+            $isSuper = true;
+            Session::set('admin_is_super', $isSuper);
+            View::assign([
+                'is_super'    => $isSuper,
+                'permissions' => array_keys(self::$permissionMap),
+            ]);
+            return;
+        }
+
         // 超级管理员跳过权限校验
         $isSuper = Session::get('admin_is_super');
         if ($isSuper === null) {
