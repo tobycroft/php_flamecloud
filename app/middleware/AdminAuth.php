@@ -87,14 +87,8 @@ class AdminAuth
             return $next($request);
         }
 
-        // 空权限列表说明没有配置权限，清除 session 让用户重新登录
-        if (empty($permissions) || !is_array($permissions)) {
-            Session::clear();
-            return redirect((string) url('auth/login'));
-        }
-
         // 检查是否有权限
-        if (!in_array($controller, $permissions)) {
+        if (empty($permissions) || !is_array($permissions) || !in_array($controller, $permissions)) {
             if (request()->isAjax() || request()->isPost() || request()->isJson()) {
                 exit(json_encode(['code' => 403, 'msg' => '无权限访问'], JSON_UNESCAPED_UNICODE));
             }
