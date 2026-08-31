@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\AdminBaseController;
 use app\model\BalanceRecordModel;
+use app\model\FcBalanceRecordModel;
 use think\facade\Session;
 use think\facade\View;
 
