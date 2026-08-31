@@ -16,7 +16,7 @@ abstract class AdminBaseController extends BaseController
 {
     /**
      * 所有后台权限映射
-     * key = 控制器名(小写), value = 中文名称
+     * key = 控制器名(小写), value = 中文名称（保留兼容）
      */
     public static array $permissionMap = [
         'index'            => '首页',
@@ -35,6 +35,62 @@ abstract class AdminBaseController extends BaseController
         'system_param'     => '参数配置',
         'admin_setting'    => '个人设置',
     ];
+
+    /**
+     * 权限菜单层级结构（匹配 sidebar）
+     * 父级组名 → [子控制器列表]
+     * 勾选父级自动继承所有子权限
+     */
+    public static array $permissionGroups = [
+        '首页'     => ['index'],
+        '用户管理' => ['user'],
+        '财务管理' => ['recharge_audit', 'user_balance', 'balance_record'],
+        '实名认证' => ['user_verification'],
+        '工单系统' => ['ticket'],
+        'ECS管理'  => ['ecs_instance', 'ecs_order'],
+        '在线客服' => ['chat'],
+        '管理员管理' => ['admin', 'admin_log', 'admin_log_login'],
+        '系统设置' => ['system_param', 'admin_setting'],
+    ];
+
+    /**
+     * 控制器名 → 所属父级组名
+     */
+    public static array $controllerParent = [
+        'index'            => '首页',
+        'user'             => '用户管理',
+        'recharge_audit'   => '财务管理',
+        'user_balance'     => '财务管理',
+        'balance_record'   => '财务管理',
+        'user_verification'=> '实名认证',
+        'ticket'           => '工单系统',
+        'ecs_instance'     => 'ECS管理',
+        'ecs_order'        => 'ECS管理',
+        'chat'             => '在线客服',
+        'admin'            => '管理员管理',
+        'admin_log'        => '管理员管理',
+        'admin_log_login'  => '管理员管理',
+        'system_param'     => '系统设置',
+        'admin_setting'    => '系统设置',
+    ];
+
+    /**
+     * 检查控制器是否有权限
+     * 允许直接匹配 或 父级组名匹配
+     */
+    public static function checkPermission(string $controller, array $permissions): bool
+    {
+        // 直接匹配
+        if (in_array($controller, $permissions)) {
+            return true;
+        }
+        // 父级组匹配
+        $parent = self::$controllerParent[$controller] ?? null;
+        if ($parent && in_array($parent, $permissions)) {
+            return true;
+        }
+        return false;
+    }
 
     public function __construct(App $app)
     {

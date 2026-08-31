@@ -120,19 +120,26 @@ function fetchTicketPending() {
 }
 
 // 从URL提取控制器名，用于权限判断
+// URL 格式: /{controller}/{action}，取第二段作为控制器名
 function getControllerFromUrl(url) {
     var path = new URL(url, window.location.origin).pathname;
     var parts = path.split('/');
-    var controller = '';
+    var nonEmpty = [];
     for (var i = 0; i < parts.length; i++) {
         if (parts[i]) {
-            controller = parts[i];
+            nonEmpty.push(parts[i]);
         }
     }
-    return controller;
+    if (nonEmpty.length === 0) return 'index';
+    // URL 格式: /{controller}/{action}，取倒数第二段作为控制器名
+    if (nonEmpty.length >= 2) {
+        return nonEmpty[nonEmpty.length - 2];
+    }
+    // 单段路径，如 '/' 或 '/admin'
+    return nonEmpty[0];
 }
 
-// 检查是否有权限访问
+// 检查是否有权限访问（支持父级组继承）
 function hasPermission(controller) {
     // ADMIN_IS_SUPER 从 session 拿到，已经在全局定义
     if (window.ADMIN_IS_SUPER) {
@@ -146,7 +153,18 @@ function hasPermission(controller) {
     if (!window.ADMIN_PERMISSIONS) {
         return false;
     }
-    return window.ADMIN_PERMISSIONS.indexOf(controller) >= 0;
+    // 直接匹配
+    if (window.ADMIN_PERMISSIONS.indexOf(controller) >= 0) {
+        return true;
+    }
+    // 父级组匹配：如果控制器所属的父级组在权限列表中，也允许
+    if (window.CONTROLLER_PARENT && window.CONTROLLER_PARENT[controller]) {
+        var parent = window.CONTROLLER_PARENT[controller];
+        if (window.ADMIN_PERMISSIONS.indexOf(parent) >= 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function renderMenu() {

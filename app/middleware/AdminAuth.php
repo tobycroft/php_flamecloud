@@ -81,8 +81,8 @@ class AdminAuth
             return $next($request);
         }
 
-        // 检查是否有权限
-        if (empty($permissions) || !is_array($permissions) || !in_array($controller, $permissions)) {
+        // 检查是否有权限（支持父级组继承）
+        if (!AdminBaseController::checkPermission($controller, $permissions)) {
             if (request()->isAjax() || request()->isPost() || request()->isJson()) {
                 exit(json_encode(['code' => 403, 'msg' => '无权限访问'], JSON_UNESCAPED_UNICODE));
             }

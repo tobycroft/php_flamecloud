@@ -290,13 +290,14 @@ class Admin extends AdminBaseController
         }
 
         View::assign([
-            'id'             => $id,
-            'username'       => $admin->username,
-            'nickname'       => $admin->nickname,
-            'is_super'       => (int) $admin->is_super,
-            'permissions'    => $permissions,
-            'permission_map' => AdminBaseController::$permissionMap,
-            'admin_name'    => Session::get('admin_name', '管理员'),
+            'id'               => $id,
+            'username'         => $admin->username,
+            'nickname'         => $admin->nickname,
+            'is_super'         => (int) $admin->is_super,
+            'permissions'      => $permissions,
+            'permission_map'   => AdminBaseController::$permissionMap,
+            'permission_groups' => AdminBaseController::$permissionGroups,
+            'admin_name'       => Session::get('admin_name', '管理员'),
         ]);
         return View::fetch('/admin/permission');
     }
