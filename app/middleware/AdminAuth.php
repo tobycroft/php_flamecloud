@@ -53,19 +53,13 @@ class AdminAuth
             return $next($request);
         }
 
-        // 从 session 获取是否超级管理员
-        $isSuper = Session::get('admin_is_super');
-        if ($isSuper === null) {
-            $isSuper = AdminUserModel::isSuper($adminIdInt);
-            Session::set('admin_is_super', $isSuper);
-        }
+        // 每次都从数据库拉取，避免 session 缓存过时数据
+        $isSuper = AdminUserModel::isSuper($adminIdInt);
+        $permissions = $isSuper ? array_keys(AdminBaseController::$permissionMap) : AdminUserModel::getPermissions($adminIdInt);
 
-        // 获取管理员权限
-        $permissions = Session::get('admin_permissions');
-        if ($permissions === null) {
-            $permissions = AdminUserModel::getPermissions($adminIdInt);
-            Session::set('admin_permissions', $permissions);
-        }
+        // 同步到 session
+        Session::set('admin_is_super', $isSuper);
+        Session::set('admin_permissions', $permissions);
 
         // 注入权限数据到视图（供侧边栏渲染）
         View::assign([

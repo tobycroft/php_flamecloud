@@ -55,26 +55,20 @@ abstract class AdminBaseController extends BaseController
         }
 
         // 权限校验由 AdminAuth 中间件完成，这里只注入视图变量
-        // 如果中间件已注入，Session 中已有缓存数据
-        $isSuper = Session::get('admin_is_super');
-        $permissions = Session::get('admin_permissions');
-
-        if ($isSuper === null) {
-            $isSuper = AdminUserModel::isSuper($adminId);
-            Session::set('admin_is_super', $isSuper);
-        }
-        if ($permissions === null) {
-            $permissions = AdminUserModel::getPermissions($adminId);
-            Session::set('admin_permissions', $permissions);
-        }
+        // 每次都从数据库拉取，避免 session 缓存过时数据
 
         // admin_id=1 无条件的全权限
         if ($adminId === 1) {
             $isSuper = true;
             $permissions = array_keys(self::$permissionMap);
-            Session::set('admin_is_super', $isSuper);
-            Session::set('admin_permissions', $permissions);
+        } else {
+            $isSuper = AdminUserModel::isSuper($adminId);
+            $permissions = $isSuper ? array_keys(self::$permissionMap) : AdminUserModel::getPermissions($adminId);
         }
+
+        // 同步到 session（供中间件或后续使用，但不再依赖 session 缓存）
+        Session::set('admin_is_super', $isSuper);
+        Session::set('admin_permissions', $permissions);
 
         View::assign([
             'is_super'    => $isSuper,
