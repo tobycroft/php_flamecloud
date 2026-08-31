@@ -90,7 +90,7 @@ const menus = [
 ];
 
 const expandedKey = 'sidebar_expanded';
-let expanded = JSON.parse(localStorage.getItem(expandedKey) || '[]');
+let expanded = []; // 默认全部收起，不加载 localStorage 历史状态
 
 function saveExpanded() { localStorage.setItem(expandedKey, JSON.stringify(expanded)); }
 function isExpanded(title) { return expanded.indexOf(title) !== -1; }
