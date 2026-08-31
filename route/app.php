@@ -99,4 +99,25 @@ Route::group(function () {
     // ECS订单管理
     Route::get('ecs_order', 'ecs_order/index');
     Route::get('ecs_order/index', 'ecs_order/index');
+
+    // ECS配置管理
+    Route::get('ecs_config', 'ecs_config/index');
+    Route::get('ecs_config/index', 'ecs_config/index');
+    Route::post('ecs_config/add', 'ecs_config/add');
+    Route::get('ecs_config/edit', 'ecs_config/edit');
+    Route::post('ecs_config/edit', 'ecs_config/edit');
+    Route::post('ecs_config/status', 'ecs_config/status');
+    Route::post('ecs_config/delete', 'ecs_config/delete');
+    Route::get('ecs_config/zone', 'ecs_config/zone');
+    Route::get('ecs_config/spec', 'ecs_config/spec');
+    Route::get('ecs_config/image', 'ecs_config/image');
+    Route::get('ecs_config/disk', 'ecs_config/disk');
+    Route::get('ecs_config/line', 'ecs_config/line');
+    Route::get('ecs_config/bandwidth', 'ecs_config/bandwidth');
+    Route::get('ecs_config/vpc', 'ecs_config/vpc');
+    Route::post('ecs_config/itemAdd', 'ecs_config/itemAdd');
+    Route::get('ecs_config/itemEdit', 'ecs_config/itemEdit');
+    Route::post('ecs_config/itemEdit', 'ecs_config/itemEdit');
+    Route::post('ecs_config/itemStatus', 'ecs_config/itemStatus');
+    Route::post('ecs_config/itemDelete', 'ecs_config/itemDelete');
 });
