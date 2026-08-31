@@ -228,6 +228,48 @@ class Admin extends AdminBaseController
     }
 
     /**
+     * 权限列表页 - 显示所有管理员并可配置权限
+     */
+    public function permissionList()
+    {
+        $keyword = trim((string) $this->request->get('keyword', ''));
+        $page    = (int) $this->request->get('page', 1);
+        $limit   = 15;
+
+        $result = AdminUserModel::getList($page, $limit, $keyword);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = $keyword !== '' ? '?keyword=' . urlencode($keyword) . '&' : '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        // 计算每个管理员的权限数量
+        $list = [];
+        foreach ($result['list'] as $item) {
+            $item['perm_count'] = 0;
+            if (!empty($item['permissions'])) {
+                $perms = json_decode($item['permissions'], true);
+                $item['perm_count'] = is_array($perms) ? count($perms) : 0;
+            }
+            $list[] = $item;
+        }
+
+        View::assign([
+            'list'        => $list,
+            'total'       => $result['total'],
+            'page'        => $page,
+            'totalPage'   => $totalPage,
+            'keyword'     => $keyword,
+            'p_query'     => $pQuery,
+            'p_start'     => $pStart,
+            'p_end'       => $pEnd,
+            'admin_name'  => Session::get('admin_name', '管理员'),
+            'admin_username' => Session::get('admin_username', ''),
+            'permission_map' => AdminBaseController::$permissionMap,
+        ]);
+        return View::fetch('/admin/permission_list');
+    }
+
+    /**
      * 权限编辑页面
      */
     public function permission()

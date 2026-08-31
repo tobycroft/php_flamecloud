@@ -85,8 +85,8 @@
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-end gap-1">
                                     <button onclick="openEditModal({$item.id})" class="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-md text-xs transition-colors">编辑</button>
-                                    {if (int)$item['id'] !== (int)$current_admin_id}
                                     <a href="{:url('admin/permission')}?id={$item.id}" class="px-3 py-1.5 text-purple-600 hover:bg-purple-50 rounded-md text-xs transition-colors">权限</a>
+                                    {if (int)$item['id'] !== (int)$current_admin_id}
                                     <button onclick="toggleStatus({$item.id}, {$item['status'] == 1 ? 0 : 1})" class="px-3 py-1.5 {$item['status'] == 1 ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'} rounded-md text-xs transition-colors">
                                         {$item['status'] == 1 ? '禁用' : '启用'}
                                     </button>
