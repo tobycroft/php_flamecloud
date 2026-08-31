@@ -42,8 +42,8 @@ abstract class AdminBaseController extends BaseController
     }
 
     /**
-     * 控制器初始化 - 权限校验
-     * 超级管理员拥有所有权限，非超级管理员仅可访问被授权的控制器
+     * 控制器初始化
+     * 权限校验已移至 AdminAuth 中间件，此处仅做视图变量注入
      */
     protected function initialize()
     {
@@ -54,66 +54,31 @@ abstract class AdminBaseController extends BaseController
             return;
         }
 
-        // admin_id=1 始终为超级管理员，跳过权限校验
-        if ($adminId === 1) {
-            $isSuper = true;
-            Session::set('admin_is_super', $isSuper);
-            View::assign([
-                'is_super'    => $isSuper,
-                'permissions' => array_keys(self::$permissionMap),
-            ]);
-            return;
-        }
-
-        // 超级管理员跳过权限校验
+        // 权限校验由 AdminAuth 中间件完成，这里只注入视图变量
+        // 如果中间件已注入，Session 中已有缓存数据
         $isSuper = Session::get('admin_is_super');
+        $permissions = Session::get('admin_permissions');
+
         if ($isSuper === null) {
-            $isSuper = AdminUserModel::isSuper((int) $adminId);
+            $isSuper = AdminUserModel::isSuper($adminId);
             Session::set('admin_is_super', $isSuper);
         }
-
-        // 注入权限数据到视图（供侧边栏渲染使用）
-        View::assign([
-            'is_super'    => $isSuper,
-            'permissions' => Session::get('admin_permissions', AdminUserModel::getPermissions((int) $adminId)),
-        ]);
-
-        if ($isSuper) {
-            return;
-        }
-
-        // 获取当前控制器名
-        $controller = strtolower($this->request->controller());
-
-        // 允许访问的控制器（无需权限）
-        $allowControllers = ['auth'];
-
-        // 不在白名单中的控制器需要校验权限
-        if (in_array($controller, $allowControllers)) {
-            return;
-        }
-
-        // 获取管理员权限
-        $permissions = Session::get('admin_permissions');
         if ($permissions === null) {
-            $permissions = AdminUserModel::getPermissions((int) $adminId);
+            $permissions = AdminUserModel::getPermissions($adminId);
             Session::set('admin_permissions', $permissions);
         }
 
-        if (!in_array($controller, $permissions)) {
-            // 判断请求类型
-            if ($this->request->isAjax() || $this->request->isPost() || $this->request->isJson()) {
-                exit(json_encode(['code' => 403, 'msg' => '无权限访问'], JSON_UNESCAPED_UNICODE));
-            }
-            // 页面请求直接输出无权限提示
-            exit('<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#f5f5f5;font-family:sans-serif;">
-                <div style="text-align:center;">
-                    <div style="font-size:72px;font-weight:bold;color:#e74c3c;margin-bottom:8px;">403</div>
-                    <div style="font-size:18px;color:#333;margin-bottom:4px;">无权限访问</div>
-                    <div style="font-size:14px;color:#999;">请联系超级管理员开通权限</div>
-                    <a href="javascript:history.back()" style="display:inline-block;margin-top:20px;padding:10px 24px;background:#e74c3c;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;">返回上一页</a>
-                </div>
-            </div>');
+        // admin_id=1 无条件的全权限
+        if ($adminId === 1) {
+            $isSuper = true;
+            $permissions = array_keys(self::$permissionMap);
+            Session::set('admin_is_super', $isSuper);
+            Session::set('admin_permissions', $permissions);
         }
+
+        View::assign([
+            'is_super'    => $isSuper,
+            'permissions' => $permissions,
+        ]);
     }
 }
