@@ -1,7 +1,22 @@
 <!-- 当前管理员权限数据 -->
 <script>
-    var ADMIN_PERMISSIONS = {json_encode($permissions ?? [])};
-    var ADMIN_IS_SUPER = {json_encode($is_super ?? false)};
+{php
+$adminId = think\facade\Session::get('admin_id');
+$adminIdInt = (int)$adminId;
+if ($adminIdInt === 1) {
+    $js_permissions = array_keys(\app\AdminBaseController::$permissionMap);
+    $js_is_super = true;
+} else {
+    $js_is_super = \app\model\AdminUserModel::isSuper($adminIdInt);
+    if ($js_is_super) {
+        $js_permissions = array_keys(\app\AdminBaseController::$permissionMap);
+    } else {
+        $js_permissions = \app\model\AdminUserModel::getPermissions($adminIdInt);
+    }
+}
+}
+    var ADMIN_PERMISSIONS = {json_encode($js_permissions)};
+    var ADMIN_IS_SUPER = {json_encode($js_is_super)};
 </script>
 
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
