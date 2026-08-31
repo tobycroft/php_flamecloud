@@ -12,9 +12,8 @@ if ($adminIdInt === 1) {
         $js_permissions = \app\model\AdminUserModel::getPermissions($adminIdInt);
     }
 }
-$view = app('view');
-$admin_name = $view->get('admin_name', '');
-$admin_username = $view->get('admin_username', '');
+$admin_name = think\facade\Session::get('admin_name', '');
+$admin_username = think\facade\Session::get('admin_username', '');
 ?>
 <script>
     var ADMIN_PERMISSIONS = <?php echo json_encode($js_permissions); ?>;
