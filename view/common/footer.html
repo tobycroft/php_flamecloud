@@ -247,6 +247,13 @@ function showToast(msg, type) {
     setTimeout(function() { toast.classList.add('hidden'); }, 4000);
 }
 
+// 自动展开当前页面所在的父级菜单
+menus.forEach(function(menu) {
+    if (menu.children.length > 0 && isParentActive(menu.children) && expanded.indexOf(menu.title) === -1) {
+        expanded.push(menu.title);
+    }
+});
+
 renderMenu();
 
 // 客服按钮权限检查：没有在线客服权限时隐藏
