@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\FcEcsInstanceModel;
 use think\facade\Session;
 use think\facade\View;
@@ -11,7 +11,7 @@ use think\facade\View;
 /**
  * ECS实例管理控制器
  */
-class EcsInstance extends BaseController
+class EcsInstance extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

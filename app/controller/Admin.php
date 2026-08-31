@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\AdminUserModel;
 use app\model\AdminLogOperationModel;
 use think\facade\Session;
@@ -12,7 +12,7 @@ use think\facade\View;
 /**
  * 管理员管理控制器
  */
-class Admin extends BaseController
+class Admin extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 
@@ -225,5 +225,110 @@ class Admin extends BaseController
             return json(['code' => 0, 'msg' => '删除成功']);
         }
         return json(['code' => 1, 'msg' => '删除失败']);
+    }
+
+    /**
+     * 权限编辑页面
+     */
+    public function permission()
+    {
+        $id = (int) $this->request->get('id', 0);
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+
+        $admin = AdminUserModel::findById($id);
+        if (empty($admin)) {
+            return json(['code' => 1, 'msg' => '管理员不存在']);
+        }
+
+        $permissions = empty($admin->permissions) ? [] : json_decode($admin->permissions, true);
+        if (!is_array($permissions)) {
+            $permissions = [];
+        }
+
+        View::assign([
+            'id'             => $id,
+            'username'       => $admin->username,
+            'nickname'       => $admin->nickname,
+            'is_super'       => (int) $admin->is_super,
+            'permissions'    => $permissions,
+            'permission_map' => AdminBaseController::$permissionMap,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+        ]);
+        return View::fetch('/admin/permission');
+    }
+
+    /**
+     * 保存权限修改
+     */
+    public function savePermission()
+    {
+        if (!$this->request->isPost()) {
+            return json(['code' => 1, 'msg' => '非法请求']);
+        }
+
+        $id = (int) $this->request->post('id', 0);
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+
+        $currentId = (int) Session::get('admin_id', 0);
+        if ($id === $currentId) {
+            return json(['code' => 1, 'msg' => '不能修改自己的权限']);
+        }
+
+        $admin = AdminUserModel::findById($id);
+        if (empty($admin)) {
+            return json(['code' => 1, 'msg' => '管理员不存在']);
+        }
+
+        $isSuper = (bool) $this->request->post('is_super', 0);
+        $permissions = (array) $this->request->post('permissions', []);
+
+        AdminUserModel::updateIsSuper($id, $isSuper);
+        if (!$isSuper) {
+            AdminUserModel::updatePermissions($id, $permissions);
+        }
+
+        AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
+            'type_code'   => 'admin_permission',
+            'action'      => '修改管理员权限',
+            'detail'      => sprintf('修改管理员 ID=%s 是否超级管理员=%s 权限数量=%d', $id, $isSuper ? '是' : '否', count($permissions)),
+            'target_type' => 'admin',
+            'target_id'   => $id,
+        ]));
+
+        return json(['code' => 0, 'msg' => '权限保存成功']);
+    }
+
+    /**
+     * 获取权限详情（AJAX）
+     */
+    public function getPermission()
+    {
+        $id = (int) $this->request->get('id', 0);
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '参数错误']);
+        }
+
+        $admin = AdminUserModel::findById($id);
+        if (empty($admin)) {
+            return json(['code' => 1, 'msg' => '管理员不存在']);
+        }
+
+        $permissions = AdminUserModel::getPermissions($id);
+
+        return json([
+            'code' => 0,
+            'data' => [
+                'id'             => (int) $admin->id,
+                'username'       => (string) $admin->username,
+                'nickname'       => (string) $admin->nickname,
+                'is_super'       => (int) $admin->is_super,
+                'permissions'    => $permissions,
+                'permission_map' => AdminBaseController::$permissionMap,
+            ],
+        ]);
     }
 }

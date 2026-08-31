@@ -101,4 +101,59 @@ class AdminUserModel extends Model
         }
         return $admin->delete();
     }
+
+    /**
+     * 获取管理员是否超级管理员
+     */
+    public static function isSuper(int $id): bool
+    {
+        $admin = self::findById($id);
+        if (empty($admin)) {
+            return false;
+        }
+        return (int) $admin->is_super === 1;
+    }
+
+    /**
+     * 获取管理员权限列表
+     * @return array<string> 权限路由数组
+     */
+    public static function getPermissions(int $id): array
+    {
+        $admin = self::findById($id);
+        if (empty($admin)) {
+            return [];
+        }
+        if (empty($admin->permissions)) {
+            return [];
+        }
+        $perms = json_decode($admin->permissions, true);
+        return is_array($perms) ? $perms : [];
+    }
+
+    /**
+     * 更新管理员权限
+     */
+    public static function updatePermissions(int $id, array $permissions): bool
+    {
+        $admin = self::find($id);
+        if (empty($admin)) {
+            return false;
+        }
+        $admin->permissions = json_encode($permissions, JSON_UNESCAPED_UNICODE);
+        return $admin->save();
+    }
+
+    /**
+     * 更新管理员是否超级管理员
+     */
+    public static function updateIsSuper(int $id, bool $isSuper): bool
+    {
+        $admin = self::find($id);
+        if (empty($admin)) {
+            return false;
+        }
+        $admin->is_super = $isSuper ? 1 : 0;
+        return $admin->save();
+    }
 }

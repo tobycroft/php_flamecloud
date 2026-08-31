@@ -16,6 +16,9 @@ Route::group(function () {
     Route::post('admin/edit', 'admin/edit');
     Route::post('admin/status', 'admin/status');
     Route::post('admin/delete', 'admin/delete');
+    Route::get('admin/permission', 'admin/permission');
+    Route::post('admin/savePermission', 'admin/savePermission');
+    Route::get('admin/getPermission', 'admin/getPermission');
 
     Route::get('user', 'user/index');
     Route::get('user/index', 'user/index');

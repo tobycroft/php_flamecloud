@@ -1,3 +1,9 @@
+<!-- 当前管理员权限数据 -->
+<script>
+    var ADMIN_PERMISSIONS = {json_encode($permissions ?? [])};
+    var ADMIN_IS_SUPER = {json_encode($is_super ?? false)};
+</script>
+
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/30 z-30 hidden lg:hidden" onclick="closeSidebar()"></div>
 
 <aside id="sidebar" class="fixed top-0 left-0 z-40 h-full w-60 bg-white border-r border-gray-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-in-out">

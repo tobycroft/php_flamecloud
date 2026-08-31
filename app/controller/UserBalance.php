@@ -3,15 +3,15 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
-use app\model\FcUserBalanceModel;
+use app\AdminBaseController;
+use app\model\UserBalanceModel;
 use think\facade\Session;
 use think\facade\View;
 
 /**
- * 用户余额管理控制器
+ * 用户余额控制器
  */
-class UserBalance extends BaseController
+class UserBalance extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

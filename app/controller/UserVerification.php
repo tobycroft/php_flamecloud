@@ -3,13 +3,13 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\FcUserVerificationModel;
 use app\model\AdminLogOperationModel;
 use think\facade\Session;
 use think\facade\View;
 
-class UserVerification extends BaseController
+class UserVerification extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

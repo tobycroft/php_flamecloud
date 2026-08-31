@@ -3,16 +3,15 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\SystemParamModel;
-use app\model\AdminLogOperationModel;
 use think\facade\Session;
 use think\facade\View;
 
 /**
  * 系统参数配置控制器
  */
-class SystemParam extends BaseController
+class SystemParam extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\FcUserModel;
 use app\model\AdminLogOperationModel;
 use think\facade\Session;
@@ -12,7 +12,7 @@ use think\facade\View;
 /**
  * 前台用户管理控制器
  */
-class User extends BaseController
+class User extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

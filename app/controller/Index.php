@@ -3,14 +3,14 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use think\facade\View;
 
 /**
  * 后台首页控制器
  * 访问需要登录（见 $middleware 与路由分组）
  */
-class Index extends BaseController
+class Index extends AdminBaseController
 {
     // 该控制器所有方法都需要登录
     protected $middleware = [\app\middleware\AdminAuth::class];

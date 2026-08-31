@@ -118,18 +118,60 @@ function fetchTicketPending() {
         .catch(function() {});
 }
 
+// 从URL提取控制器名，用于权限判断
+function getControllerFromUrl(url) {
+    var path = new URL(url, window.location.origin).pathname;
+    var parts = path.split('/');
+    var controller = '';
+    for (var i = 0; i < parts.length; i++) {
+        if (parts[i]) {
+            controller = parts[i];
+        }
+    }
+    return controller;
+}
+
+// 检查是否有权限访问
+function hasPermission(controller) {
+    // ADMIN_IS_SUPER 从 session 拿到，已经在全局定义
+    if (window.ADMIN_IS_SUPER) {
+        return true;
+    }
+    // 首页总是允许
+    if (controller === '' || controller === 'index') {
+        return true;
+    }
+    // ADMIN_PERMISSIONS 全局数组，包含允许的控制器名
+    if (!window.ADMIN_PERMISSIONS) {
+        return false;
+    }
+    return window.ADMIN_PERMISSIONS.indexOf(controller) >= 0;
+}
+
 function renderMenu() {
     var container = document.getElementById('menuContainer');
     var html = '';
     menus.forEach(function(menu) {
         if (menu.children.length === 0) {
+            var controller = getControllerFromUrl(menu.url);
+            if (!hasPermission(controller)) {
+                return;
+            }
             var active = isActive(menu.url);
             html += '<a href="' + menu.url + '" class="flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm transition-colors ' +
                 (active ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-gray-50') + '">' +
                 menu.icon + '<span>' + menu.title + '</span></a>';
             if (active) updatePageTitle(menu.title);
         } else {
-            var parentActive = isParentActive(menu.children);
+            // 过滤掉没有权限的子菜单项
+            var visibleChildren = menu.children.filter(function(child) {
+                var controller = getControllerFromUrl(child.url);
+                return hasPermission(controller);
+            });
+            if (visibleChildren.length === 0) {
+                return;
+            }
+            var parentActive = isParentActive(visibleChildren);
             var open = isExpanded(menu.title) || parentActive;
             html += '<div class="mb-0.5">';
             html += '<div onclick="toggleMenu(\'' + menu.title + '\')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors ' +
@@ -154,7 +196,7 @@ function renderMenu() {
             html += '</div>';
             html += '<div class="overflow-hidden transition-all duration-200 ' + (open ? 'max-h-96' : 'max-h-0') + '">';
             html += '<div class="ml-8 mt-0.5 mb-1 space-y-0.5">';
-            menu.children.forEach(function(child) {
+            visibleChildren.forEach(function(child) {
                 var childActive = isActive(child.url);
                 html += '<a href="' + child.url + '" class="block px-3 py-2 rounded-lg text-sm transition-colors ' +
                     (childActive ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50') + '">' +

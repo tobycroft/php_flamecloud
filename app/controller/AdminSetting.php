@@ -3,15 +3,15 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\AdminUserSettingModel;
 use think\facade\Session;
 use think\facade\View;
 
 /**
- * 管理员个人设置控制器
+ * 个人设置控制器
  */
-class AdminSetting extends BaseController
+class AdminSetting extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

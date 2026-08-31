@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\FcTicketModel;
 use app\model\FcTicketReplyModel;
 use app\model\FcTicketAttachmentModel;
@@ -23,7 +23,7 @@ use think\facade\View;
  *  2 = 客服答复（客服回复）
  *  3 = 结案关闭
  */
-class Ticket extends BaseController
+class Ticket extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

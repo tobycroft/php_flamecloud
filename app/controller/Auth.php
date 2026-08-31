@@ -93,6 +93,8 @@ class Auth extends BaseController
         Session::set('admin_name', (string) $admin->nickname ?: $admin->username);
         Session::set('admin_username', (string) $admin->username);
         Session::set('last_activity', time());
+        Session::set('admin_is_super', (int) $admin->is_super === 1);
+        Session::set('admin_permissions', AdminUserModel::getPermissions((int) $admin->id));
 
         return json(['code' => 0, 'msg' => '登录成功', 'url' => (string) url('index/index')]);
     }

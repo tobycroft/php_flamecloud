@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\SystemParamModel;
 use Tobycroft\AossSdk\File;
 
@@ -11,7 +11,7 @@ use Tobycroft\AossSdk\File;
  * 文件上传控制器
  * 提供 AOSS 上传 Token 和 Hash 解析接口
  */
-class Upload extends BaseController
+class Upload extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

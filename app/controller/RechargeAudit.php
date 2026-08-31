@@ -3,7 +3,7 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\FcRechargeOrderModel;
 use app\model\FcUserBalanceModel;
 use app\model\FcBalanceRecordModel;
@@ -18,7 +18,7 @@ use think\facade\View;
  * - 审核详情（查看订单信息、凭证图片）
  * - 通过 / 拒绝
  */
-class RechargeAudit extends BaseController
+class RechargeAudit extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

@@ -3,14 +3,14 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\ChatModel;
 use app\model\AdminLogOperationModel;
 use think\facade\Db;
 use think\facade\Session;
 use think\facade\View;
 
-class Chat extends BaseController
+class Chat extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

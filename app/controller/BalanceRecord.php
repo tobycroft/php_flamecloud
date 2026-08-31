@@ -3,15 +3,15 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
-use app\model\FcBalanceRecordModel;
+use app\AdminBaseController;
+use app\model\BalanceRecordModel;
 use think\facade\Session;
 use think\facade\View;
 
 /**
- * 交易流水控制器
+ * 余额流水控制器
  */
-class BalanceRecord extends BaseController
+class BalanceRecord extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 

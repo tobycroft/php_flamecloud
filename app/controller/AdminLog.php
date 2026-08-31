@@ -3,16 +3,15 @@ declare (strict_types = 1);
 
 namespace app\controller;
 
-use app\BaseController;
+use app\AdminBaseController;
 use app\model\AdminLogOperationModel;
-use app\model\AdminLogTypeModel;
 use think\facade\Session;
 use think\facade\View;
 
 /**
  * 管理员操作日志控制器
  */
-class AdminLog extends BaseController
+class AdminLog extends AdminBaseController
 {
     protected $middleware = [\app\middleware\AdminAuth::class];
 
