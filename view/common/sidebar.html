@@ -12,6 +12,8 @@ if ($adminIdInt === 1) {
         $js_permissions = \app\model\AdminUserModel::getPermissions($adminIdInt);
     }
 }
+$admin_name = think\facade\View::getVar('admin_name', '');
+$admin_username = think\facade\View::getVar('admin_username', '');
 ?>
 <script>
     var ADMIN_PERMISSIONS = <?php echo json_encode($js_permissions); ?>;
@@ -34,13 +36,13 @@ if ($adminIdInt === 1) {
     <div class="border-t border-gray-100 px-4 py-3 shrink-0">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-semibold text-sm">
-                {:mb_substr((string)$admin_name, 0, 1)}
+                <?php echo mb_substr((string)$admin_name, 0, 1); ?>
             </div>
             <div class="flex-1 min-w-0">
-                <div class="text-sm font-medium truncate">{$admin_name}</div>
-                <div class="text-xs text-gray-400 truncate">@{$admin_username}</div>
+                <div class="text-sm font-medium truncate"><?php echo htmlentities((string) $admin_name); ?></div>
+                <div class="text-xs text-gray-400 truncate">@<?php echo htmlentities((string) $admin_username); ?></div>
             </div>
-            <a href="{:url('auth/logout')}" class="text-gray-400 hover:text-red-500 transition-colors" title="退出登录">
+            <a href="<?php echo url('auth/logout'); ?>" class="text-gray-400 hover:text-red-500 transition-colors" title="退出登录">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 16l-4-4m0 0l4-4m-4 4h14"/></svg>
             </a>
         </div>
