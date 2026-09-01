@@ -25,18 +25,29 @@ class UserVerification extends AdminBaseController
 
     public function index()
     {
+        return $this->renderList('');
+    }
+
+    public function pending()
+    {
+        return $this->renderList('0');
+    }
+
+    public function passed()
+    {
+        return $this->renderList('1');
+    }
+
+    public function rejected()
+    {
+        return $this->renderList('2');
+    }
+
+    // 审核列表公共渲染：status 由 action 方法名决定，保持 URL 路径与状态一一对应
+    private function renderList(string $status)
+    {
         $page    = max(1, (int) $this->request->get('page', 1));
         $limit   = 15;
-
-        // status 由独立路由路径决定（user_verification_pending / _passed / _rejected）
-        $rule   = $this->request->rule();
-        $rulePath = $rule ? $rule->getRule() : '';
-        $statusRouteMap = [
-            'user_verification_pending'  => '0',
-            'user_verification_passed'   => '1',
-            'user_verification_rejected' => '2',
-        ];
-        $status  = $statusRouteMap[$rulePath] ?? '';
 
         $type    = trim((string) $this->request->get('type', ''));
         $keyword = trim((string) $this->request->get('keyword', ''));
@@ -58,12 +69,12 @@ class UserVerification extends AdminBaseController
 
         // status 对应基础路由（用于分页/筛选链接保持当前状态）
         $statusBaseRouteMap = [
-            ''  => 'user_verification',
-            '0' => 'user_verification_pending',
-            '1' => 'user_verification_passed',
-            '2' => 'user_verification_rejected',
+            ''  => 'user_verification/index',
+            '0' => 'user_verification/pending',
+            '1' => 'user_verification/passed',
+            '2' => 'user_verification/rejected',
         ];
-        $basePath = (string) url($statusBaseRouteMap[$status] ?? 'user_verification');
+        $basePath = (string) url($statusBaseRouteMap[$status] ?? 'user_verification/index');
 
         $params = [];
         if ($type !== '') $params[] = 'type=' . urlencode($type);

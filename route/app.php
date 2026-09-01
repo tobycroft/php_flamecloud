@@ -68,9 +68,9 @@ Route::group(function () {
     // 实名认证审核
     Route::get('user_verification', 'user_verification/index');
     Route::get('user_verification/index', 'user_verification/index');
-    Route::get('user_verification_pending', 'user_verification/index');
-    Route::get('user_verification_passed', 'user_verification/index');
-    Route::get('user_verification_rejected', 'user_verification/index');
+    Route::get('user_verification/pending', 'user_verification/pending');
+    Route::get('user_verification/passed', 'user_verification/passed');
+    Route::get('user_verification/rejected', 'user_verification/rejected');
     Route::get('user_verification/detail', 'user_verification/detail');
     Route::post('user_verification/approve', 'user_verification/approve');
     Route::post('user_verification/reject', 'user_verification/reject');
