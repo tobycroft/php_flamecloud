@@ -27,7 +27,17 @@ class UserVerification extends AdminBaseController
     {
         $page    = max(1, (int) $this->request->get('page', 1));
         $limit   = 15;
-        $status  = trim((string) $this->request->param('status', ''));
+
+        // status 由独立路由路径决定（user_verification_pending / _passed / _rejected）
+        $rule   = $this->request->rule();
+        $rulePath = $rule ? $rule->getRule() : '';
+        $statusRouteMap = [
+            'user_verification_pending'  => '0',
+            'user_verification_passed'   => '1',
+            'user_verification_rejected' => '2',
+        ];
+        $status  = $statusRouteMap[$rulePath] ?? '';
+
         $type    = trim((string) $this->request->get('type', ''));
         $keyword = trim((string) $this->request->get('keyword', ''));
 
@@ -46,8 +56,14 @@ class UserVerification extends AdminBaseController
 
         $pendingCount = FcUserVerificationModel::countByStatus(0);
 
-        // status 通过 path 传递，其余筛选条件走 query
-        $basePath = (string) url('user_verification/index', $status !== '' ? ['status' => $status] : []);
+        // status 对应基础路由（用于分页/筛选链接保持当前状态）
+        $statusBaseRouteMap = [
+            ''  => 'user_verification',
+            '0' => 'user_verification_pending',
+            '1' => 'user_verification_passed',
+            '2' => 'user_verification_rejected',
+        ];
+        $basePath = (string) url($statusBaseRouteMap[$status] ?? 'user_verification');
 
         $params = [];
         if ($type !== '') $params[] = 'type=' . urlencode($type);
