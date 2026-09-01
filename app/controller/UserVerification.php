@@ -27,7 +27,7 @@ class UserVerification extends AdminBaseController
     {
         $page    = max(1, (int) $this->request->get('page', 1));
         $limit   = 15;
-        $status  = trim((string) $this->request->get('status', ''));
+        $status  = trim((string) $this->request->param('status', ''));
         $type    = trim((string) $this->request->get('type', ''));
         $keyword = trim((string) $this->request->get('keyword', ''));
 
@@ -46,8 +46,10 @@ class UserVerification extends AdminBaseController
 
         $pendingCount = FcUserVerificationModel::countByStatus(0);
 
+        // status 通过 path 传递，其余筛选条件走 query
+        $basePath = (string) url('user_verification/index', $status !== '' ? ['status' => $status] : []);
+
         $params = [];
-        if ($status !== '') $params[] = 'status=' . urlencode($status);
         if ($type !== '') $params[] = 'type=' . urlencode($type);
         if ($keyword !== '') $params[] = 'keyword=' . urlencode($keyword);
         $pQuery = !empty($params) ? '?' . implode('&', $params) . '&' : '?';
@@ -62,6 +64,7 @@ class UserVerification extends AdminBaseController
             'keyword'       => $keyword,
             'status'        => $status,
             'type'          => $type,
+            'base_path'     => $basePath,
             'p_query'       => $pQuery,
             'p_start'       => $pStart,
             'p_end'         => $pEnd,

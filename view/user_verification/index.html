@@ -26,14 +26,7 @@
     <main class="flex-1 p-6">
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
-                <form method="get" action="{:url('user_verification/index')}" class="flex items-center gap-2 flex-wrap">
-                    <select name="status" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
-                        <option value="">全部状态</option>
-                        {foreach $status_map as $k => $v}
-                        <option value="{$k}" {$status === (string)$k ? 'selected' : ''}>{$v['text']}</option>
-                        {/foreach}
-                    </select>
-
+                <form method="get" action="{$base_path}" class="flex items-center gap-2 flex-wrap">
                     <select name="type" class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
                         <option value="">全部类型</option>
                         {foreach $type_map as $k => $v}
@@ -93,15 +86,15 @@
                 <div class="text-sm text-gray-400">共 {$total} 条记录</div>
                 <div class="flex items-center gap-1">
                     {if $page > 1}
-                    <a href="{:url('user_verification/index')}{$p_query}page=1" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">首页</a>
-                    <a href="{:url('user_verification/index')}{$p_query}page={$page-1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">上一页</a>
+                    <a href="{$base_path}{$p_query}page=1" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">首页</a>
+                    <a href="{$base_path}{$p_query}page={$page-1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">上一页</a>
                     {/if}
                     {for start="$p_start" end="$p_end"}
-                    <a href="{:url('user_verification/index')}{$p_query}page={$i}" class="px-3 py-1.5 border rounded-md text-sm transition-colors {$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}">{$i}</a>
+                    <a href="{$base_path}{$p_query}page={$i}" class="px-3 py-1.5 border rounded-md text-sm transition-colors {$i === $page ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}">{$i}</a>
                     {/for}
                     {if $page < $totalPage}
-                    <a href="{:url('user_verification/index')}{$p_query}page={$page+1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">下一页</a>
-                    <a href="{:url('user_verification/index')}{$p_query}page={$totalPage}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">末页</a>
+                    <a href="{$base_path}{$p_query}page={$page+1}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">下一页</a>
+                    <a href="{$base_path}{$p_query}page={$totalPage}" class="px-3 py-1.5 text-sm text-gray-600 border border-gray-300 hover:bg-gray-100 rounded transition-colors">末页</a>
                     {/if}
                 </div>
             </div>
