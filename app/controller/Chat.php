@@ -80,7 +80,7 @@ class Chat extends AdminBaseController
                     break;
                 }
             }
-            return redirect(url('chat/detail', ['uid' => $firstUid]));
+            return redirect((string) url('chat/detail', ['uid' => $firstUid]));
         }
 
         // 无聊天记录时，渲染 detail 页面（左侧列表为空）
