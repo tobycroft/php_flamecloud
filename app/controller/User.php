@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\AdminBaseController;
 use app\model\FcUserModel;
+use app\model\FcActionLogModel;
 use app\model\AdminLogOperationModel;
 use think\facade\Session;
 use think\facade\View;
@@ -42,6 +43,51 @@ class User extends AdminBaseController
             'admin_id'      => (int) Session::get('admin_id', 0),
         ]);
         return View::fetch('/user/index');
+    }
+
+    /**
+     * 用户登录记录
+     */
+    public function loginLog()
+    {
+        $uid  = (int) $this->request->get('uid', 0);
+        $page = (int) $this->request->get('page', 1);
+        $limit = 15;
+
+        $user = $uid > 0 ? FcUserModel::findById($uid) : null;
+        if (empty($user)) {
+            return redirect((string) url('user/index'));
+        }
+
+        $result    = FcActionLogModel::getLoginList($uid, $page, $limit);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = '?uid=' . $uid . '&';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        // 最后登录时间：优先取 fc_user.last_login_at，未记录时回退到行为日志
+        $lastLogin = (string) ($user['last_login_at'] ?? '');
+        if ($lastLogin === '') {
+            $log = FcActionLogModel::getLastLogin($uid);
+            $lastLogin = (string) ($log['created_at'] ?? '');
+        }
+
+        View::assign([
+            'list'           => $result['list'],
+            'total'          => $result['total'],
+            'page'           => $page,
+            'totalPage'      => $totalPage,
+            'uid'            => $uid,
+            'user'           => $user,
+            'last_login'     => $lastLogin,
+            'p_query'        => $pQuery,
+            'p_start'        => $pStart,
+            'p_end'          => $pEnd,
+            'admin_name'     => Session::get('admin_name', '管理员'),
+            'admin_username' => Session::get('admin_username', ''),
+            'admin_id'       => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/user/login_log');
     }
 
     public function edit()
