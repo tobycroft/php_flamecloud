@@ -124,17 +124,57 @@ function isActive(url) { if (url === '#') return false; return window.location.p
 function isParentActive(children) { return children.some(function(c) { return isActive(c.url); }); }
 function updatePageTitle(title) { document.getElementById('pageTitle').textContent = title; }
 
+// 记录各类红点的最新数量，确保菜单重渲染（展开/折叠）后红点状态不丢失
+// 红点只有在轮询接口返回未读数为 0 时才会消失，而不是在点击/展开菜单时消失
+var lastTicketCount = 0;
+var lastChatCount = 0;
+var lastVerificationCount = 0;
+
+// 根据记录的最新数量，重新应用侧边栏红点（徽章）的显隐状态
+function applyBadgeState() {
+    var ticketBadge = document.getElementById('ticketBadge');
+    if (ticketBadge) {
+        if (lastTicketCount > 0) {
+            ticketBadge.textContent = lastTicketCount > 99 ? '99+' : String(lastTicketCount);
+            ticketBadge.classList.remove('hidden');
+        } else {
+            ticketBadge.classList.add('hidden');
+        }
+    }
+    var chatBadge = document.getElementById('chatBadge');
+    if (chatBadge) {
+        if (lastChatCount > 0) {
+            chatBadge.textContent = lastChatCount > 99 ? '99+' : String(lastChatCount);
+            chatBadge.classList.remove('hidden');
+        } else {
+            chatBadge.classList.add('hidden');
+        }
+    }
+    var verificationBadge = document.getElementById('verificationBadge');
+    if (verificationBadge) {
+        if (lastVerificationCount > 0) {
+            verificationBadge.textContent = lastVerificationCount > 99 ? '99+' : String(lastVerificationCount);
+            verificationBadge.classList.remove('hidden');
+        } else {
+            verificationBadge.classList.add('hidden');
+        }
+    }
+}
+
 // 工单红点提醒：轮询待回复工单数
 function fetchTicketPending() {
     fetch('{:url("ticket/pending_count")}')
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res.code === 0 && res.count > 0) {
+                lastTicketCount = res.count || 0;
                 var badge = document.getElementById('ticketBadge');
                 if (badge) {
                     badge.textContent = res.count > 99 ? '99+' : res.count;
                     badge.classList.remove('hidden');
                 }
+            } else {
+                lastTicketCount = 0;
             }
         })
         .catch(function() {});
@@ -247,6 +287,8 @@ function renderMenu() {
         }
     });
     container.innerHTML = html;
+    // 重渲染会重建徽章元素，这里用最新记录的数量恢复红点显隐状态
+    applyBadgeState();
 }
 
 function toggleSidebar() {
@@ -289,11 +331,14 @@ function fetchTicketPending() {
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res.code === 0 && res.count > 0) {
+                lastTicketCount = res.count || 0;
                 var badge = document.getElementById('ticketBadge');
                 if (badge) {
                     badge.textContent = res.count > 99 ? '99+' : res.count;
                     badge.classList.remove('hidden');
                 }
+            } else {
+                lastTicketCount = 0;
             }
         })
         .catch(function() {});
@@ -309,6 +354,7 @@ function fetchChatPending() {
         .then(function(res) {
             if (res.code === 0) {
                 var count = res.count || 0;
+                lastChatCount = count;
                 var users = res.users || [];
                 var badge = document.getElementById('chatBadge');
                 var floatBadge = document.getElementById('chatFloatBadge');
@@ -337,6 +383,7 @@ function fetchChatPending() {
                     }
                     prevChatUserIds = currentIds;
                 } else {
+                    lastChatCount = 0;
                     if (badge) badge.classList.add('hidden');
                     if (floatBadge) floatBadge.classList.add('hidden');
                     prevChatUserIds = [];
@@ -354,6 +401,7 @@ function fetchVerificationPending() {
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (res.code === 0 && res.count > 0) {
+                lastVerificationCount = res.count || 0;
                 var badge = document.getElementById('verificationBadge');
                 if (badge) {
                     badge.textContent = res.count > 99 ? '99+' : res.count;
