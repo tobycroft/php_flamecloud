@@ -94,6 +94,7 @@ Route::group(function () {
     Route::post('news/edit', 'news/edit');
     Route::post('news/status', 'news/status');
     Route::post('news/delete', 'news/delete');
+    Route::post('news/batchDelete', 'news/batchDelete');
 
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');

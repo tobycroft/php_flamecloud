@@ -5,6 +5,7 @@ namespace app\controller;
 
 use app\AdminBaseController;
 use app\model\FcNewsModel;
+use app\model\AdminLogOperationModel;
 use think\facade\Session;
 use think\facade\View;
 
@@ -67,7 +68,9 @@ class News extends AdminBaseController
         }
 
         $data = $this->collectForm();
-        FcNewsModel::create($data);
+        $row  = FcNewsModel::create($data);
+
+        $this->logAction('news', '新增新闻公告', '新增 ID=' . $row->id . ' 标题=' . $title, 'news', (int) $row->id);
 
         return json(['code' => 0, 'msg' => '添加成功']);
     }
@@ -99,6 +102,8 @@ class News extends AdminBaseController
         $data = $this->collectForm();
         FcNewsModel::where('id', $id)->update($data);
 
+        $this->logAction('news', '编辑新闻公告', '编辑 ID=' . $id . ' 标题=' . $title, 'news', $id);
+
         return json(['code' => 0, 'msg' => '修改成功']);
     }
 
@@ -120,6 +125,8 @@ class News extends AdminBaseController
 
         FcNewsModel::where('id', $id)->update(['status' => $status]);
 
+        $this->logAction('news', '切换新闻公告状态', 'ID=' . $id . ' status=' . $status, 'news', $id);
+
         return json(['code' => 0, 'msg' => $status ? '已显示' : '已隐藏']);
     }
 
@@ -138,6 +145,29 @@ class News extends AdminBaseController
         }
 
         FcNewsModel::where('id', $id)->delete();
+
+        $this->logAction('news', '删除新闻公告', '删除 ID=' . $id, 'news', $id);
+
+        return json(['code' => 0, 'msg' => '删除成功']);
+    }
+
+    /**
+     * 批量删除
+     */
+    public function batchDelete()
+    {
+        if (!$this->request->isPost()) {
+            return json(['code' => 1, 'msg' => '请求方式错误']);
+        }
+
+        $ids = array_filter(array_map('intval', (array) $this->request->post('ids/a', [])));
+        if (empty($ids)) {
+            return json(['code' => 1, 'msg' => '请选择要删除的公告']);
+        }
+
+        FcNewsModel::whereIn('id', $ids)->delete();
+
+        $this->logAction('news', '批量删除新闻公告', '批量删除 ID=' . implode(',', $ids), 'news', 0);
 
         return json(['code' => 0, 'msg' => '删除成功']);
     }
@@ -166,5 +196,32 @@ class News extends AdminBaseController
             'sort'        => (int) $this->request->post('sort', 0),
             'publish_time'=> $publishTime,
         ];
+    }
+
+    /**
+     * 后台操作日志元数据
+     */
+    private function getLogMeta(): array
+    {
+        return [
+            'admin_id'   => (int) Session::get('admin_id', 0),
+            'admin_name' => (string) Session::get('admin_name', ''),
+            'ip'         => $this->request->ip(),
+            'user_agent' => (string) $this->request->header('user-agent', ''),
+        ];
+    }
+
+    /**
+     * 记录后台操作日志到 admin_log_operation（系统 ActionLog）
+     */
+    private function logAction(string $typeCode, string $action, string $detail, string $targetType = 'news', int $targetId = 0): void
+    {
+        AdminLogOperationModel::record(array_merge($this->getLogMeta(), [
+            'type_code'   => $typeCode,
+            'action'      => $action,
+            'detail'      => $detail,
+            'target_type' => $targetType,
+            'target_id'   => $targetId,
+        ]));
     }
 }
