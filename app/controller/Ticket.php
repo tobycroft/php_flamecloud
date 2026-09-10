@@ -52,7 +52,6 @@ class Ticket extends AdminBaseController
         'elastic_ip'  => '弹性IP',
         'auto_scale'  => '负载均衡',
         'other'       => '其他',
-        'chat'        => '在线客服',
     ];
 
     const TICKET_TYPE_MAP = [
@@ -127,7 +126,6 @@ class Ticket extends AdminBaseController
             'category_map'  => self::CATEGORY_MAP,
             'ticket_type_map' => self::TICKET_TYPE_MAP,
             'status_cnt'    => $statusCnt,
-            'chat_count'    => FcTicketModel::countChat(),
             'pending_reply' => FcTicketModel::countPendingReply(),
             'admin_name'    => Session::get('admin_name', '管理员'),
             'admin_username'=> Session::get('admin_username', ''),

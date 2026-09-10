@@ -29,7 +29,12 @@
             <div class="px-5 pt-4 border-b border-gray-100">
                 <div class="flex flex-wrap gap-1">
                     <a href="{:url('ticket/index')}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">全部（{$total}）</a>
-                    <a href="{:url('ticket/index', ['status' => 0])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '0' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">待回复（{$status_cnt[0]}）</a>
+                    <a href="{:url('ticket/index', ['status' => 0])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '0' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">
+                        待回复（{$status_cnt[0]}）
+                        {if $status_cnt[0] > 0}
+                        <span class="ml-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+                        {/if}
+                    </a>
                     <a href="{:url('ticket/index', ['status' => 1])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '1' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">
                         客户发送（{$status_cnt[1]}）
                         {if $status_cnt[1] > 0}
@@ -38,12 +43,6 @@
                     </a>
                     <a href="{:url('ticket/index', ['status' => 2])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '2' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">客服答复（{$status_cnt[2]}）</a>
                     <a href="{:url('ticket/index', ['status' => 3])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$status === '3' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">结案关闭（{$status_cnt[3]}）</a>
-                    <a href="{:url('ticket/index', ['category' => 'chat'])}" class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors {$category === 'chat' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}">
-                        在线客服（{$chat_count}）
-                        {if $chat_count > 0}
-                        <span class="ml-1 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        {/if}
-                    </a>
                 </div>
             </div>
 

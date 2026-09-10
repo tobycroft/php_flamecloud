@@ -122,12 +122,14 @@ class FcTicketModel extends Model
     }
 
     /**
-     * 统计待客服回复的工单数（status=1 客户发送）
+     * 统计待客服处理的工单数（status=0 待回复 / status=1 客户发送）
      * 用于 sidebar 红点提醒
+     *
+     * 红点在客服答复(status=2)或结案关闭(status=3)后消失
      */
     public static function countPendingReply(): int
     {
-        return (int) self::whereNull('deleted_at')->where('status', 1)->count();
+        return (int) self::whereNull('deleted_at')->whereIn('status', [0, 1])->count();
     }
 
     /**
@@ -168,14 +170,4 @@ class FcTicketModel extends Model
         ]) !== false;
     }
 
-    /**
-     * 统计聊天工单数
-     */
-    public static function countChat(): int
-    {
-        return (int) self::whereNull('deleted_at')
-            ->where('ticket_type', 'chat')
-            ->where('status', '<>', 3)
-            ->count();
-    }
 }
