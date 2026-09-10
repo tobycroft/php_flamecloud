@@ -35,6 +35,7 @@ abstract class AdminBaseController extends BaseController
         'admin_log_login'  => '登录日志',
         'system_param'     => '参数配置',
         'admin_setting'    => '个人设置',
+        'news'             => '新闻公告',
     ];
 
     /**
@@ -52,6 +53,7 @@ abstract class AdminBaseController extends BaseController
         '在线客服' => ['chat'],
         '管理员管理' => ['admin', 'admin_log', 'admin_log_login'],
         '系统设置' => ['system_param', 'admin_setting'],
+        '内容管理' => ['news'],
     ];
 
     /**
@@ -74,6 +76,7 @@ abstract class AdminBaseController extends BaseController
         'admin_log_login'  => '管理员管理',
         'system_param'     => '系统设置',
         'admin_setting'    => '系统设置',
+        'news'             => '内容管理',
     ];
 
     /**

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火焰云总后台 - 新闻公告</title>
+    {include file="common/head" /}
+    <!-- 富文本编辑器 Quill -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+    <style>
+        /* 让编辑器在弹层里高度固定、滚动友好 */
+        #editor { min-height: 260px; }
+        .ql-toolbar.ql-snow, .ql-container.ql-snow { border-color: #e5e7eb; }
+        .ql-container.ql-snow { border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+        .ql-toolbar.ql-snow { border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+{include file="common/sidebar" /}
+
+<div class="lg:ml-60 min-h-screen flex flex-col">
+    <header class="sticky top-0 z-20 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-6">
+        <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <h1 id="pageTitle" class="text-lg font-semibold">新闻公告</h1>
+        <button onclick="openAdd()" class="ml-auto px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors">新增公告</button>
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-medium">ID</th>
+                            <th class="px-5 py-3 text-left font-medium">标题</th>
+                            <th class="px-5 py-3 text-left font-medium">来源</th>
+                            <th class="px-5 py-3 text-left font-medium">状态</th>
+                            <th class="px-5 py-3 text-left font-medium">发布时间</th>
+                            <th class="px-5 py-3 text-left font-medium">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {if empty($list)}
+                        <tr>
+                            <td colspan="6" class="px-5 py-16 text-center text-gray-400">暂无公告</td>
+                        </tr>
+                        {else /}
+                        {foreach $list as $item}
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="px-5 py-3.5 text-gray-500">#{$item.id}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="font-medium text-gray-900">{$item.title}</div>
+                                {if $item.summary}<div class="text-xs text-gray-400 mt-0.5 line-clamp-1">{$item.summary}</div>{/if}
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500">{$item.source}</td>
+                            <td class="px-5 py-3.5">
+                                {if $item.status == 1}
+                                <span class="px-2 py-0.5 text-xs font-medium bg-green-50 text-green-600 rounded">显示</span>
+                                {else /}
+                                <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded">隐藏</span>
+                                {/if}
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs">{$item.publish_time}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="toggleStatus({$item.id}, {$item.status})"
+                                        class="px-3 py-1.5 text-xs rounded-lg border {if $item.status == 1}border-gray-200 text-gray-600 hover:bg-gray-50{else /}border-green-200 text-green-600 hover:bg-green-50{/if} transition-colors">
+                                        {if $item.status == 1}隐藏{else /}显示{/if}
+                                    </button>
+                                    <button onclick="openEdit({$item.id})"
+                                        class="px-3 py-1.5 text-xs rounded-lg border border-orange-200 text-orange-600 hover:bg-orange-50 transition-colors">编辑</button>
+                                    <button onclick="deleteNews({$item.id})"
+                                        class="px-3 py-1.5 text-xs rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {/foreach}
+                        {/if}
+                    </tbody>
+                </table>
+            </div>
+            {if $totalPage > 1}
+            <div class="flex items-center justify-center gap-1 py-4 text-sm">
+                {for start="$p_start" end="$p_end"}
+                <a href="{$p_query}page={$i}" class="px-3 py-1.5 rounded-lg {if $i == $page}bg-orange-500 text-white{else /}text-gray-600 hover:bg-gray-100{/if}">{$i}</a>
+                {/for}
+            </div>
+            {/if}
+        </div>
+    </main>
+</div>
+
+<!-- 新增/编辑弹层 -->
+<div id="newsModal" class="fixed inset-0 z-40 hidden items-center justify-center bg-black/40 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h2 id="modalTitle" class="text-base font-semibold text-gray-900">新增公告</h2>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <div class="px-6 py-5 space-y-4">
+            <input type="hidden" id="newsId" value="0" />
+            <div>
+                <label class="block text-sm text-gray-600 mb-1.5">标题 <span class="text-red-500">*</span></label>
+                <input type="text" id="f_title" placeholder="请输入公告标题"
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1.5">摘要</label>
+                <input type="text" id="f_summary" placeholder="列表展示用的简短摘要（可选）"
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">来源</label>
+                    <input type="text" id="f_source" placeholder="如：火焰云官方（可选）"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">发布人</label>
+                    <input type="text" id="f_author" placeholder="发布人（可选）"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">发布时间</label>
+                    <input type="datetime-local" id="f_publish_time"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">排序</label>
+                    <input type="number" id="f_sort" value="0"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1.5">状态</label>
+                    <select id="f_status"
+                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm">
+                        <option value="1">显示</option>
+                        <option value="0">隐藏</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1.5">封面图 URL</label>
+                <input type="text" id="f_cover_image" placeholder="封面图地址（可选）"
+                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1.5">正文（富文本）</label>
+                <div id="editor"></div>
+                <p class="text-xs text-gray-400 mt-1.5">
+                    提示：正文以 HTML 富文本存储，前端 Web 与 App 均按响应式渲染；请避免使用固定像素宽度或 flex 等复杂布局，以免两端错位。
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+            <button onclick="closeModal()" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">取消</button>
+            <button onclick="saveNews()" class="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var quill = null;
+function ensureEditor() {
+    if (quill) return;
+    quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: '请输入公告正文（支持富文本）',
+        modules: {
+            toolbar: [
+                [{ header: [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ color: [] }, { background: [] }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['blockquote', 'code-block', 'link'],
+                ['clean']
+            ]
+        }
+    });
+}
+
+function openAdd() {
+    ensureEditor();
+    document.getElementById('modalTitle').textContent = '新增公告';
+    document.getElementById('newsId').value = 0;
+    document.getElementById('f_title').value = '';
+    document.getElementById('f_summary').value = '';
+    document.getElementById('f_source').value = '';
+    document.getElementById('f_author').value = '';
+    document.getElementById('f_publish_time').value = '';
+    document.getElementById('f_sort').value = 0;
+    document.getElementById('f_status').value = 1;
+    document.getElementById('f_cover_image').value = '';
+    quill.setContents([]);
+    showModal();
+}
+
+function openEdit(id) {
+    ensureEditor();
+    fetch('{:url("news/edit")}?id=' + id)
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.code !== 0 || !res.data) {
+                showToast(res.msg || '加载失败', 'error');
+                return;
+            }
+            var d = res.data;
+            document.getElementById('modalTitle').textContent = '编辑公告';
+            document.getElementById('newsId').value = d.id;
+            document.getElementById('f_title').value = d.title || '';
+            document.getElementById('f_summary').value = d.summary || '';
+            document.getElementById('f_source').value = d.source || '';
+            document.getElementById('f_author').value = d.author || '';
+            document.getElementById('f_publish_time').value = (d.publish_time || '').replace(' ', 'T').slice(0, 16);
+            document.getElementById('f_sort').value = d.sort || 0;
+            document.getElementById('f_status').value = d.status == 1 ? 1 : 0;
+            document.getElementById('f_cover_image').value = d.cover_image || '';
+            quill.clipboard.dangerouslyPasteHTML(d.content || '');
+            showModal();
+        })
+        .catch(function () { showToast('加载失败', 'error'); });
+}
+
+function showModal() {
+    var m = document.getElementById('newsModal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+}
+function closeModal() {
+    var m = document.getElementById('newsModal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+}
+
+function saveNews() {
+    var title = document.getElementById('f_title').value.trim();
+    if (title === '') {
+        showToast('标题不能为空', 'error');
+        return;
+    }
+    var id = document.getElementById('newsId').value;
+    var url = id == 0 ? '{:url("news/add")}' : '{:url("news/edit")}';
+    var fd = new URLSearchParams();
+    fd.append('id', id);
+    fd.append('title', title);
+    fd.append('summary', document.getElementById('f_summary').value);
+    fd.append('source', document.getElementById('f_source').value);
+    fd.append('author', document.getElementById('f_author').value);
+    fd.append('publish_time', document.getElementById('f_publish_time').value);
+    fd.append('sort', document.getElementById('f_sort').value);
+    fd.append('status', document.getElementById('f_status').value);
+    fd.append('cover_image', document.getElementById('f_cover_image').value);
+    fd.append('content', quill.getSemanticHTML());
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: fd.toString()
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.code === 0) {
+                showToast('保存成功');
+                closeModal();
+                setTimeout(function () { window.location.reload(); }, 600);
+            } else {
+                showToast(res.msg || '保存失败', 'error');
+            }
+        })
+        .catch(function () { showToast('保存失败', 'error'); });
+}
+
+function toggleStatus(id, status) {
+    fetch('{:url("news/status")}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + id + '&status=' + (status == 1 ? 0 : 1)
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.code === 0) { window.location.reload(); }
+            else { showToast(res.msg || '操作失败', 'error'); }
+        })
+        .catch(function () { showToast('操作失败', 'error'); });
+}
+
+function deleteNews(id) {
+    if (!confirm('确认删除该公告？')) return;
+    fetch('{:url("news/delete")}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + id
+    })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            if (res.code === 0) { window.location.reload(); }
+            else { showToast(res.msg || '删除失败', 'error'); }
+        })
+        .catch(function () { showToast('删除失败', 'error'); });
+}
+</script>
+
+{include file="common/footer" /}
+
+</body>
+</html>

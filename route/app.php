@@ -86,6 +86,15 @@ Route::group(function () {
     Route::get('balance_record', 'balance_record/index');
     Route::get('balance_record/index', 'balance_record/index');
 
+    // 新闻公告
+    Route::get('news', 'news/index');
+    Route::get('news/index', 'news/index');
+    Route::post('news/add', 'news/add');
+    Route::get('news/edit', 'news/edit');
+    Route::post('news/edit', 'news/edit');
+    Route::post('news/status', 'news/status');
+    Route::post('news/delete', 'news/delete');
+
     // 心跳保活
     Route::get('heartbeat', 'auth/heartbeat');
 
