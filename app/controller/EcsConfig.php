@@ -11,6 +11,7 @@ use app\model\EcsImageModel;
 use app\model\EcsDiskModel;
 use app\model\EcsLineModel;
 use app\model\EcsBandwidthModel;
+use app\model\EcsPeriodModel;
 use app\model\EcsVpcModel;
 use think\facade\Session;
 use think\facade\View;
@@ -827,6 +828,37 @@ class EcsConfig extends AdminBaseController
         return View::fetch('/ecs_config/vpc_list');
     }
 
+    // ==================== 购买周期（折扣）管理 ====================
+
+    /**
+     * 所有购买周期列表（全局）
+     */
+    public function periodList()
+    {
+        $page  = max(1, (int) $this->request->get('page', 1));
+        $limit = 15;
+
+        $result    = EcsPeriodModel::getList($page, $limit, []);
+        $totalPage = $result['total'] > 0 ? (int) ceil($result['total'] / $limit) : 1;
+        $pQuery    = '?';
+        $pStart    = max(1, $page - 2);
+        $pEnd      = min($totalPage, $page + 2);
+
+        View::assign([
+            'list'          => $result['list'],
+            'total'         => $result['total'],
+            'page'          => $page,
+            'totalPage'     => $totalPage,
+            'p_query'       => $pQuery,
+            'p_start'       => $pStart,
+            'p_end'         => $pEnd,
+            'admin_name'    => Session::get('admin_name', '管理员'),
+            'admin_username'=> Session::get('admin_username', ''),
+            'admin_id'      => (int) Session::get('admin_id', 0),
+        ]);
+        return View::fetch('/ecs_config/period_list');
+    }
+
     // ==================== 通用CRUD操作 ====================
 
     /**
@@ -972,6 +1004,22 @@ class EcsConfig extends AdminBaseController
                 ]);
                 return json(['code' => 0, 'msg' => '添加成功']);
 
+            case 'period':
+                $month    = (int) ($data['month'] ?? 0);
+                $label    = trim((string) ($data['label'] ?? ''));
+                $discount = (float) ($data['discount'] ?? 1);
+                $sort     = (int) ($data['sort'] ?? 0);
+                if ($month <= 0 || $label === '') {
+                    return json(['code' => 1, 'msg' => '参数不完整']);
+                }
+                EcsPeriodModel::create([
+                    'month'    => $month,
+                    'label'    => $label,
+                    'discount' => $discount,
+                    'sort'     => $sort,
+                ]);
+                return json(['code' => 0, 'msg' => '添加成功']);
+
             default:
                 return json(['code' => 1, 'msg' => '未知类型']);
         }
@@ -1077,6 +1125,15 @@ class EcsConfig extends AdminBaseController
                 $updateData = ['zone_id' => $zoneId, 'name' => $name, 'cidr' => $cidr, 'sort' => $sort];
                 break;
 
+            case 'period':
+                $month    = (int) ($data['month'] ?? 0);
+                $label    = trim((string) ($data['label'] ?? ''));
+                $discount = (float) ($data['discount'] ?? 1);
+                $sort     = (int) ($data['sort'] ?? 0);
+                if ($month <= 0 || $label === '') return json(['code' => 1, 'msg' => '参数不完整']);
+                $updateData = ['month' => $month, 'label' => $label, 'discount' => $discount, 'sort' => $sort];
+                break;
+
             default:
                 return json(['code' => 1, 'msg' => '未知类型']);
         }
@@ -1149,6 +1206,7 @@ class EcsConfig extends AdminBaseController
             'line'      => EcsLineModel::class,
             'bandwidth' => EcsBandwidthModel::class,
             'vpc'       => EcsVpcModel::class,
+            'period'    => EcsPeriodModel::class,
         ];
         return $map[$type] ?? null;
     }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>火焰云总后台 - ECS配置管理</title>
+    <title>火焰云总后台 - 购买周期与折扣</title>
     {include file="common/head" /}
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900">
@@ -15,28 +15,18 @@
         <button id="hamburger" class="lg:hidden mr-3 text-gray-500 hover:text-gray-700" onclick="toggleSidebar()">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-        <h1 id="pageTitle" class="text-lg font-semibold">ECS配置管理</h1>
+        <h1 id="pageTitle" class="text-lg font-semibold">购买周期与折扣</h1>
     </header>
 
     <main class="flex-1 p-6">
         <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3 justify-between">
                 <div class="flex items-center gap-3 flex-wrap">
-                    <form method="get" action="{:url('ecs_config/index')}" class="flex items-center gap-2">
-                        <input type="text" name="keyword" value="{$keyword}" placeholder="搜索地域名称/标识"
-                            class="px-4 py-2 w-48 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none text-sm" />
-                        <button type="submit" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm transition-colors">搜索</button>
-                        {if $keyword !== ''}
-                        <a href="{:url('ecs_config/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">清除</a>
-                        {/if}
-                    </form>
+                    <a href="{:url('ecs_config/index')}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">← 返回配置首页</a>
                 </div>
                 <button onclick="openAddModal()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg text-sm font-medium hover:shadow-lg hover:shadow-orange-500/30 transition-all">
-                    + 新增地域
+                    + 新增周期
                 </button>
-                <a href="{:url('ecs_config/periodList')}" class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-sm transition-colors">
-                    购买周期与折扣
-                </a>
             </div>
 
             <div class="overflow-x-auto">
@@ -44,8 +34,10 @@
                     <thead class="bg-gray-50 text-gray-500">
                         <tr>
                             <th class="px-5 py-3 text-left font-medium">ID</th>
-                            <th class="px-5 py-3 text-left font-medium">地域名称</th>
-                            <th class="px-5 py-3 text-left font-medium">标识</th>
+                            <th class="px-5 py-3 text-left font-medium">周期(月)</th>
+                            <th class="px-5 py-3 text-left font-medium">展示文案</th>
+                            <th class="px-5 py-3 text-left font-medium">折扣率</th>
+                            <th class="px-5 py-3 text-left font-medium">折扣</th>
                             <th class="px-5 py-3 text-left font-medium">排序</th>
                             <th class="px-5 py-3 text-left font-medium">状态</th>
                             <th class="px-5 py-3 text-left font-medium">创建时间</th>
@@ -55,14 +47,22 @@
                     <tbody class="divide-y divide-gray-100">
                         {if empty($list)}
                         <tr>
-                            <td colspan="7" class="px-5 py-12 text-center text-gray-400">暂无数据</td>
+                            <td colspan="9" class="px-5 py-12 text-center text-gray-400">暂无数据</td>
                         </tr>
                         {else}
                         {foreach $list as $v}
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-5 py-3.5 text-gray-500">#{$v.id}</td>
-                            <td class="px-5 py-3.5 font-medium">{$v.name}</td>
-                            <td class="px-5 py-3.5 font-mono text-xs text-gray-500">{$v.value}</td>
+                            <td class="px-5 py-3.5 font-medium">{$v.month}</td>
+                            <td class="px-5 py-3.5">{$v.label}</td>
+                            <td class="px-5 py-3.5 text-gray-500">{$v.discount}</td>
+                            <td class="px-5 py-3.5">
+                                {if $v.discount < 1}
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">{:($v.discount * 10)}折</span>
+                                {else}
+                                <span class="text-gray-400 text-xs">无优惠</span>
+                                {/if}
+                            </td>
                             <td class="px-5 py-3.5 text-gray-500">{$v.sort}</td>
                             <td class="px-5 py-3.5">
                                 {if $v.status == 1}
@@ -78,13 +78,6 @@
                             <td class="px-5 py-3.5 text-gray-500 text-xs">{$v.created_at}</td>
                             <td class="px-5 py-3.5">
                                 <div class="flex items-center justify-end gap-1">
-                                    <a href="{:url('ecs_config/zone')}?region_id={$v.id}" class="px-3 py-1.5 text-purple-600 hover:bg-purple-50 rounded-md text-xs transition-colors" title="管理可用区">可用区</a>
-                                    <a href="{:url('ecs_config/spec')}?region_id={$v.id}" class="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-md text-xs transition-colors" title="管理规格">规格</a>
-                                    <a href="{:url('ecs_config/image')}?region_id={$v.id}" class="px-3 py-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md text-xs transition-colors" title="管理镜像">镜像</a>
-                                    <a href="{:url('ecs_config/disk')}?region_id={$v.id}" class="px-3 py-1.5 text-teal-600 hover:bg-teal-50 rounded-md text-xs transition-colors" title="管理磁盘">磁盘</a>
-                                    <a href="{:url('ecs_config/line')}?region_id={$v.id}" class="px-3 py-1.5 text-cyan-600 hover:bg-cyan-50 rounded-md text-xs transition-colors" title="管理线路">线路</a>
-                                    <a href="{:url('ecs_config/bandwidth')}?region_id={$v.id}" class="px-3 py-1.5 text-amber-600 hover:bg-amber-50 rounded-md text-xs transition-colors" title="管理带宽">带宽</a>
-                                    <a href="{:url('ecs_config/vpc')}?region_id={$v.id}" class="px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-md text-xs transition-colors" title="管理VPC">VPC</a>
                                     <button onclick="openEditModal({$v.id})" class="px-3 py-1.5 text-gray-600 hover:bg-gray-50 rounded-md text-xs transition-colors">编辑</button>
                                     <button onclick="toggleStatus({$v.id}, {$v.status == 1 ? 0 : 1})" class="px-3 py-1.5 {$v.status == 1 ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50'} rounded-md text-xs transition-colors">
                                         {$v.status == 1 ? '禁用' : '启用'}
@@ -117,28 +110,33 @@
     </main>
 </div>
 
-<!-- 新增地域模态框 -->
+<!-- 新增周期模态框 -->
 <div id="modalAdd" class="fixed inset-0 z-50 hidden">
     <div class="modal-mask absolute inset-0" onclick="closeAddModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
         <div class="flex items-center justify-between mb-5">
-            <h3 class="text-lg font-semibold">新增地域</h3>
+            <h3 class="text-lg font-semibold">新增购买周期</h3>
             <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
         <form id="addForm" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">地域名称 <span class="text-red-500">*</span></label>
-                <input id="add_name" name="name" type="text" required maxlength="100"
-                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
-                    placeholder="如：华东1(杭州)" />
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">周期(月) <span class="text-red-500">*</span></label>
+                <input id="add_month" name="month" type="number" min="1" value="1" required
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">地域标识 <span class="text-red-500">*</span></label>
-                <input id="add_value" name="value" type="text" required maxlength="100"
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">展示文案 <span class="text-red-500">*</span></label>
+                <input id="add_label" name="label" type="text" required maxlength="64"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
-                    placeholder="如：cn-hangzhou" />
+                    placeholder="如：1年" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">折扣率 <span class="text-red-500">*</span></label>
+                <input id="add_discount" name="discount" type="number" step="0.01" min="0.01" max="1" value="1"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+                    placeholder="1=无优惠，0.9=9折" />
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1.5">排序</label>
@@ -153,12 +151,12 @@
     </div>
 </div>
 
-<!-- 编辑地域模态框 -->
+<!-- 编辑周期模态框 -->
 <div id="modalEdit" class="fixed inset-0 z-50 hidden">
     <div class="modal-mask absolute inset-0" onclick="closeEditModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
         <div class="flex items-center justify-between mb-5">
-            <h3 class="text-lg font-semibold">编辑地域</h3>
+            <h3 class="text-lg font-semibold">编辑购买周期</h3>
             <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -166,13 +164,18 @@
         <form id="editForm" class="space-y-4">
             <input type="hidden" id="edit_id" name="id" />
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">地域名称 <span class="text-red-500">*</span></label>
-                <input id="edit_name" name="name" type="text" required maxlength="100"
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">周期(月) <span class="text-red-500">*</span></label>
+                <input id="edit_month" name="month" type="number" min="1" required
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1.5">地域标识 <span class="text-red-500">*</span></label>
-                <input id="edit_value" name="value" type="text" required maxlength="100"
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">展示文案 <span class="text-red-500">*</span></label>
+                <input id="edit_label" name="label" type="text" required maxlength="64"
+                    class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1.5">折扣率 <span class="text-red-500">*</span></label>
+                <input id="edit_discount" name="discount" type="number" step="0.01" min="0.01" max="1"
                     class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none" />
             </div>
             <div>
@@ -191,6 +194,8 @@
 {include file="common/footer" /}
 
 <script>
+var type = 'period';
+
 function openAddModal() { document.getElementById('modalAdd').classList.remove('hidden'); }
 function closeAddModal() {
     document.getElementById('modalAdd').classList.add('hidden');
@@ -198,13 +203,14 @@ function closeAddModal() {
 }
 
 function openEditModal(id) {
-    fetch("{:url('ecs_config/edit')}?id=" + id)
+    fetch("{:url('ecs_config/itemEdit')}?type=" + type + "&id=" + id)
     .then(function(r) { return r.json(); })
     .then(function(res) {
         if (res.code !== 0) { showToast(res.msg || '获取数据失败', 'error'); return; }
         document.getElementById('edit_id').value = res.data.id;
-        document.getElementById('edit_name').value = res.data.name;
-        document.getElementById('edit_value').value = res.data.value;
+        document.getElementById('edit_month').value = res.data.month;
+        document.getElementById('edit_label').value = res.data.label;
+        document.getElementById('edit_discount').value = res.data.discount;
         document.getElementById('edit_sort').value = res.data.sort;
         document.getElementById('modalEdit').classList.remove('hidden');
     })
@@ -216,11 +222,11 @@ function closeEditModal() {
 }
 
 function toggleStatus(id, status) {
-    var tip = status === 1 ? '确定启用该地域？' : '确定禁用该地域？';
+    var tip = status === 1 ? '确定启用该周期？' : '确定禁用该周期？';
     if (!confirm(tip)) return;
     var body = new URLSearchParams();
-    body.append('id', id); body.append('status', status);
-    fetch("{:url('ecs_config/status')}", {
+    body.append('type', type); body.append('id', id); body.append('status', status);
+    fetch("{:url('ecs_config/itemStatus')}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()
@@ -231,10 +237,10 @@ function toggleStatus(id, status) {
 }
 
 function confirmDelete(id) {
-    if (!confirm('确定删除该地域？')) return;
+    if (!confirm('确定删除该周期？')) return;
     var body = new URLSearchParams();
-    body.append('id', id);
-    fetch("{:url('ecs_config/delete')}", {
+    body.append('type', type); body.append('id', id);
+    fetch("{:url('ecs_config/itemDelete')}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()
@@ -247,10 +253,12 @@ function confirmDelete(id) {
 document.getElementById('addForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var body = new URLSearchParams();
-    body.append('name', document.getElementById('add_name').value);
-    body.append('value', document.getElementById('add_value').value);
+    body.append('type', type);
+    body.append('month', document.getElementById('add_month').value);
+    body.append('label', document.getElementById('add_label').value);
+    body.append('discount', document.getElementById('add_discount').value);
     body.append('sort', document.getElementById('add_sort').value);
-    fetch("{:url('ecs_config/add')}", {
+    fetch("{:url('ecs_config/itemAdd')}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()
@@ -263,11 +271,13 @@ document.getElementById('addForm').addEventListener('submit', function(e) {
 document.getElementById('editForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var body = new URLSearchParams();
+    body.append('type', type);
     body.append('id', document.getElementById('edit_id').value);
-    body.append('name', document.getElementById('edit_name').value);
-    body.append('value', document.getElementById('edit_value').value);
+    body.append('month', document.getElementById('edit_month').value);
+    body.append('label', document.getElementById('edit_label').value);
+    body.append('discount', document.getElementById('edit_discount').value);
     body.append('sort', document.getElementById('edit_sort').value);
-    fetch("{:url('ecs_config/edit')}", {
+    fetch("{:url('ecs_config/itemEdit')}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: body.toString()
