@@ -138,6 +138,7 @@ Route::group(function () {
     Route::get('ecs_config/bandwidthList', 'ecs_config/bandwidthList');
     Route::get('ecs_config/vpc', 'ecs_config/vpc');
     Route::get('ecs_config/vpcList', 'ecs_config/vpcList');
+    Route::get('ecs_config/periodList', 'ecs_config/periodList');
     Route::post('ecs_config/itemAdd', 'ecs_config/itemAdd');
     Route::get('ecs_config/itemEdit', 'ecs_config/itemEdit');
     Route::post('ecs_config/itemEdit', 'ecs_config/itemEdit');
