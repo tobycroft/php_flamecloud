@@ -58,7 +58,7 @@
                             <td class="px-5 py-3.5 text-gray-500">{$v.discount}</td>
                             <td class="px-5 py-3.5">
                                 {if $v.discount < 1}
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">{:($v.discount * 10)}折</span>
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-red-50 text-red-600">{$v.discount * 10}折</span>
                                 {else}
                                 <span class="text-gray-400 text-xs">无优惠</span>
                                 {/if}
